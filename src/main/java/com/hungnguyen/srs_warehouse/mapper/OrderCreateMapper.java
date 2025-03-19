@@ -10,7 +10,7 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface OrderCreateMapper {
-    OrderMapper INSTANCE = Mappers.getMapper(OrderMapper.class);
+    OrderCreateMapper INSTANCE = Mappers.getMapper(OrderCreateMapper.class);
 
     Supplier toSupplier(SupplierRequest dto);
     Receiver toReceiver(ReceiverRequest dto);

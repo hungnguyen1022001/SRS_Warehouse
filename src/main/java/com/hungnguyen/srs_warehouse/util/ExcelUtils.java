@@ -31,7 +31,6 @@ public class ExcelUtils {
 
                 // Nếu STT không hợp lệ hoặc rỗng, dừng xử lý file
                 if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK) {
-                    System.out.println("📌 Dừng xử lý file tại dòng: " + (i + 1));
                     break;
                 }
 
@@ -53,52 +52,20 @@ public class ExcelUtils {
 
     private static OrderRequest parseOrderRow(Row row, int rowIndex, List<Map<String, String>> errorRows) {
         try {
-            System.out.println("📥 Đọc dòng " + rowIndex);
-
-            // Log supplier data
-            String supplierName = row.getCell(1) != null ? row.getCell(1).toString() : "null";
-            String supplierAddress = row.getCell(3) != null ? row.getCell(2).toString() : "null";
-            String supplierPhone = row.getCell(2) != null ? row.getCell(3).toString() : "null";
-            String supplierEmail = row.getCell(4) != null ? row.getCell(4).toString() : "null";
-            String supplierLat = row.getCell(5) != null ? row.getCell(5).toString() : "null";
-            String supplierLong = row.getCell(6) != null ? row.getCell(6).toString() : "null";
-
-            System.out.println("📋 DEBUG | Dòng " + rowIndex + " - Tên NCC: " + supplierName);
-            System.out.println("🏠 DEBUG | Dòng " + rowIndex + " - Địa chỉ NCC: " + supplierAddress);
-            System.out.println("📞 DEBUG | Dòng " + rowIndex + " - SĐT NCC: " + supplierPhone);
-            System.out.println("📧 DEBUG | Dòng " + rowIndex + " - Email NCC: " + supplierEmail);
-            System.out.println("🌐 DEBUG | Dòng " + rowIndex + " - Vĩ độ NCC: " + supplierLat);
-            System.out.println("🌐 DEBUG | Dòng " + rowIndex + " - Kinh độ NCC: " + supplierLong);
-
-            // Log receiver data
-            String receiverName = row.getCell(7) != null ? row.getCell(7).toString() : "null";
-            String receiverAddress = row.getCell(9) != null ? row.getCell(8).toString() : "null";
-            String receiverPhone = row.getCell(8) != null ? row.getCell(9).toString() : "null";
-            String receiverEmail = row.getCell(10) != null ? row.getCell(10).toString() : "null";
-            String receiverLat = row.getCell(11) != null ? row.getCell(11).toString() : "null";
-            String receiverLong = row.getCell(12) != null ? row.getCell(12).toString() : "null";
-
-            System.out.println("📋 DEBUG | Dòng " + rowIndex + " - Tên BNH: " + receiverName);
-            System.out.println("🏠 DEBUG | Dòng " + rowIndex + " - Địa chỉ BNH: " + receiverAddress);
-            System.out.println("📞 DEBUG | Dòng " + rowIndex + " - SĐT BNH: " + receiverPhone);
-            System.out.println("📧 DEBUG | Dòng " + rowIndex + " - Email BNH: " + receiverEmail);
-            System.out.println("🌐 DEBUG | Dòng " + rowIndex + " - Vĩ độ BNH: " + receiverLat);
-            System.out.println("🌐 DEBUG | Dòng " + rowIndex + " - Kinh độ BNH: " + receiverLong);
-
             SupplierRequest supplier = new SupplierRequest(
                     validateString(row.getCell(1), "Tên NCC", 50, rowIndex, errorRows),
-                    validateString(row.getCell(2), "Địa chỉ NCC", 200, rowIndex, errorRows),
-                    validatePhone(row.getCell(3), "SĐT NCC", rowIndex, errorRows),
-                    validateEmail(row.getCell(4), "Email NCC", rowIndex, errorRows),
+                    validateString(row.getCell(4), "Địa chỉ NCC", 200, rowIndex, errorRows),
+                    validatePhone(row.getCell(2), "SĐT NCC", rowIndex, errorRows),
+                    validateEmail(row.getCell(3), "Email NCC", rowIndex, errorRows),
                     validateBigDecimal(row.getCell(5), "Vĩ độ NCC", new BigDecimal("-90.000000"), new BigDecimal("90.000000"), rowIndex, errorRows),
                     validateBigDecimal(row.getCell(6), "Kinh độ NCC", new BigDecimal("-180.000000"), new BigDecimal("180.000000"), rowIndex, errorRows)
             );
 
             ReceiverRequest receiver = new ReceiverRequest(
                     validateString(row.getCell(7), "Tên BNH", 50, rowIndex, errorRows),
-                    validateString(row.getCell(8), "Địa chỉ BNH", 200, rowIndex, errorRows),
-                    validatePhone(row.getCell(9), "SĐT BNH", rowIndex, errorRows),
-                    validateEmail(row.getCell(10), "Email BNH", rowIndex, errorRows),
+                    validateString(row.getCell(10), "Địa chỉ BNH", 200, rowIndex, errorRows),
+                    validatePhone(row.getCell(8), "SĐT BNH", rowIndex, errorRows),
+                    validateEmail(row.getCell(9), "Email BNH", rowIndex, errorRows),
                     validateBigDecimal(row.getCell(11), "Vĩ độ BNH", new BigDecimal("-90.000000"), new BigDecimal("90.000000"), rowIndex, errorRows),
                     validateBigDecimal(row.getCell(12), "Kinh độ BNH", new BigDecimal("-180.000000"), new BigDecimal("180.000000"), rowIndex, errorRows)
             );
@@ -163,8 +130,6 @@ public class ExcelUtils {
             }
         }
 
-        System.out.println("📞 DEBUG | Dòng " + rowIndex + " - SĐT NCC đọc được: " + phone); // Log dữ liệu đọc được
-
         if (!phone.matches("^0\\d{9,10}$")) {
             errorRows.add(Map.of("Row", String.valueOf(rowIndex), "Error", fieldName + " không đúng định dạng (bắt đầu bằng 0, 10-11 chữ số)"));
         }
@@ -179,15 +144,12 @@ public class ExcelUtils {
         }
         String email = cell.getStringCellValue().trim().toLowerCase();
 
-        System.out.println("📧 DEBUG | Dòng " + rowIndex + " - Email NCC đọc được: " + email); // Log dữ liệu đọc được
-
         if (!email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
             errorRows.add(Map.of("Row", String.valueOf(rowIndex), "Error", fieldName + " không đúng định dạng email hợp lệ"));
         }
 
         return email;
     }
-
 
     private static BigDecimal validateBigDecimal(Cell cell, String fieldName, BigDecimal min, BigDecimal max, int rowIndex, List<Map<String, String>> errorRows) {
         if (cell == null || cell.getCellType() == CellType.BLANK) {
@@ -205,5 +167,4 @@ public class ExcelUtils {
             return BigDecimal.ZERO;
         }
     }
-
 }

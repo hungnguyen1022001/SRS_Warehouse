@@ -8,15 +8,15 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.3</version>  <!-- 🔹 Dùng version mới nhất -->
-		<relativePath/> <!-- lookup parent from Maven repository -->
+		<version>3.4.3</version>
+		<relativePath/>
 	</parent>
 
 	<groupId>com.hungnguyen</groupId>
 	<artifactId>srs-warehouse</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>srs-warehouse</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Demo project for Spring Boot with Batch Processing</description>
 
 	<properties>
 		<java.version>17</java.version>
@@ -73,8 +73,6 @@
 			<artifactId>mapstruct</artifactId>
 			<version>${mapstruct.version}</version>
 		</dependency>
-
-		<!-- Annotation Processor cho MapStruct -->
 		<dependency>
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct-processor</artifactId>
@@ -100,12 +98,12 @@
 			<version>0.11.2</version>
 		</dependency>
 
+		<!-- Apache POI (Xử lý Excel) -->
 		<dependency>
 			<groupId>org.apache.poi</groupId>
 			<artifactId>poi-ooxml</artifactId>
 			<version>5.2.3</version>
 		</dependency>
-
 
 		<!-- OpenAPI (Swagger) -->
 		<dependency>
@@ -128,6 +126,25 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+
+		<!-- Spring Batch -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-batch</artifactId>
+		</dependency>
+
+		<!-- Quartz Scheduler -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-quartz</artifactId>
+		</dependency>
+
+		<!-- Spring Boot Actuator -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -164,14 +181,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<exclude>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</exclude>
-					</excludes>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

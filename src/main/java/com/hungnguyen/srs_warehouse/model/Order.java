@@ -2,7 +2,7 @@ package com.hungnguyen.srs_warehouse.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import java.util.List;
 import java.time.LocalDateTime;
 
 @Entity
@@ -54,4 +54,7 @@ public class Order {
 
     @Column(name = "RETURN_AT")
     private LocalDateTime returnAt;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderHistory> orderHistories;
 }

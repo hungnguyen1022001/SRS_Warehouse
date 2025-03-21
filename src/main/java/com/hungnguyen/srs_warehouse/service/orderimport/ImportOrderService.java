@@ -99,7 +99,7 @@ public class ImportOrderService {
         order.setSupplier(supplier);
         order.setReceiver(receiver);
         order.setCreatedAt(java.time.LocalDateTime.now());
-        order.setCreatedBy(user.getUserId());  
+        order.setCreatedBy(user.getUserId());
         order.setWarehouse(warehouse);
         order.setStatus(0);
 

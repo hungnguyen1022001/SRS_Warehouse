@@ -3,6 +3,8 @@ package com.hungnguyen.srs_warehouse.controller;
 import com.hungnguyen.srs_warehouse.model.DTO.OrderSearchCriteria;
 import com.hungnguyen.srs_warehouse.model.DTO.ordercreate.OrderRequest;
 import com.hungnguyen.srs_warehouse.service.OrderService;
+import com.hungnguyen.srs_warehouse.model.DTO.BaseResponseDTO;
+import com.hungnguyen.srs_warehouse.model.DTO.orderDetail.OrderDetailDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,20 +47,22 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Map<String, Object>> createOrder(@Valid @RequestBody OrderRequest request,
-                                                           @RequestHeader("Authorization") String authHeader) {
-        // ✅ Kiểm tra token có đúng định dạng "Bearer token"
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(401).body(Map.of("status", 0, "message", "Unauthorized - Missing Bearer Token"));
-        }
-
-        // ✅ Lấy token từ header (loại bỏ "Bearer ")
-        String token = authHeader.substring(7);
-        Map<String, Object> response = orderService.createOrder(request, token);
-
-        return ResponseEntity.ok(response);
+    @GetMapping("/detail/{orderId}")
+    public ResponseEntity<BaseResponseDTO<OrderDetailDTO>> getOrderDetail(@PathVariable String orderId) {
+        return ResponseEntity.ok(orderService.getOrderDetail(orderId));
     }
 
+    @PostMapping("/create")
+    public ResponseEntity<BaseResponseDTO<String>> createOrder(
+            @Valid @RequestBody OrderRequest request,
+            @RequestHeader("Authorization") String authHeader) {
 
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401)
+                    .body(new BaseResponseDTO<>(0, "Unauthorized - Missing Bearer Token", null));
+        }
+
+        String token = authHeader.substring(7);
+        return ResponseEntity.ok(orderService.createOrder(request, token));
+    }
 }

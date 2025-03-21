@@ -2,10 +2,13 @@ package com.hungnguyen.srs_warehouse.service;
 
 import com.hungnguyen.srs_warehouse.model.*;
 import com.hungnguyen.srs_warehouse.model.DTO.OrderListResponse;
+import com.hungnguyen.srs_warehouse.model.DTO.orderDetail.*;
+import com.hungnguyen.srs_warehouse.model.DTO.BaseResponseDTO;
 import com.hungnguyen.srs_warehouse.model.DTO.OrderSearchCriteria;
 import com.hungnguyen.srs_warehouse.model.DTO.ordercreate.OrderRequest;
 import com.hungnguyen.srs_warehouse.mapper.OrderCreateMapper;
 import com.hungnguyen.srs_warehouse.mapper.OrderMapper;
+import com.hungnguyen.srs_warehouse.mapper.OrderDetailMapper;
 import com.hungnguyen.srs_warehouse.repository.*;
 import com.hungnguyen.srs_warehouse.security.jwt.JwtUtils;
 import com.hungnguyen.srs_warehouse.specification.OrderSpecification;
@@ -26,6 +29,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import java.util.Optional;
+
+
 @Service
 public class OrderService {
 
@@ -40,6 +46,7 @@ public class OrderService {
     private final MessageSource messageSource;
     private final JwtUtils jwtUtils;
     private final OrderCounterRepository orderCounterRepository;
+    private final OrderDetailMapper orderDetailMapper;
 
     @Autowired
     public OrderService(OrderRepository orderRepository,
@@ -52,6 +59,7 @@ public class OrderService {
                         OrderMapper orderMapper,
                         MessageSource messageSource,
                         JwtUtils jwtUtils,
+                        OrderDetailMapper orderDetailMapper,
                         OrderCounterRepository orderCounterRepository) {
         this.orderRepository = orderRepository;
         this.orderHistoryRepository = orderHistoryRepository;
@@ -61,6 +69,7 @@ public class OrderService {
         this.userRepository = userRepository;
         this.orderCreateMapper = orderCreateMapper;
         this.orderMapper = orderMapper;
+        this.orderDetailMapper = orderDetailMapper;
         this.messageSource = messageSource;
         this.jwtUtils = jwtUtils;
         this.orderCounterRepository = orderCounterRepository;
@@ -89,8 +98,10 @@ public class OrderService {
         );
     }
 
+
+
     @Transactional
-    public Map<String, Object> createOrder(OrderRequest request, String token) {
+    public BaseResponseDTO<String> createOrder(OrderRequest request, String token) {
         String username = jwtUtils.getUsernameFromToken(token);
         String warehouseId = jwtUtils.getWarehouseIdFromToken(token);
 
@@ -151,8 +162,9 @@ public class OrderService {
         orderHistory.setVersion(1);
         orderHistoryRepository.saveAndFlush(orderHistory);
 
-        return Map.of("status", 1, "message", getMessage("SUCCESS"), "orderId", orderId);
+        return new BaseResponseDTO<>(1, getMessage("SUCCESS"), orderId);
     }
+
 
     private synchronized String generateSupplierId() {
         long count = supplierRepository.count() + 1;
@@ -190,4 +202,15 @@ public class OrderService {
         Locale locale = LocaleContextHolder.getLocale();
         return messageSource.getMessage(code, null, locale);
     }
+    public BaseResponseDTO<OrderDetailDTO> getOrderDetail(String orderId) {
+        Optional<Order> optionalOrder = orderRepository.findById(orderId);
+
+        if (optionalOrder.isEmpty()) {
+            return new BaseResponseDTO<>(0, getMessage("ORDER_001"), null);
+        }
+
+        OrderDetailDTO orderDetailDTO = orderDetailMapper.toOrderDetailDTO(optionalOrder.get());
+        return new BaseResponseDTO<>(1, getMessage("SUCCESS"), orderDetailDTO);
+    }
+
 }

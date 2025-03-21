@@ -12,4 +12,5 @@ public interface OrderRepository extends JpaRepository<Order, String>, JpaSpecif
     // Using JpaSpecificationExecutor for dynamic queries
     @Query("SELECT MAX(CAST(SUBSTRING(o.orderId, 10, 5) AS long)) FROM Order o WHERE o.orderId LIKE CONCAT('DH-', :datePart, '-%')")
     Long findMaxOrderIdByDate(@Param("datePart") String datePart);
+
 }

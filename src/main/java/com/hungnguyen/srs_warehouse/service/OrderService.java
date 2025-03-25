@@ -102,67 +102,84 @@ public class OrderService {
 
     @Transactional
     public BaseResponseDTO<String> createOrder(OrderRequest request, String token) {
-        String username = jwtUtils.getUsernameFromToken(token);
-        String warehouseId = jwtUtils.getWarehouseIdFromToken(token);
+        try {
+            String username = jwtUtils.getUsernameFromToken(token);
+            String warehouseId = jwtUtils.getWarehouseIdFromToken(token);
 
-        if (warehouseId == null || warehouseId.isEmpty()) {
-            throw new RuntimeException("Không tìm thấy warehouseId trong token!");
+            if (warehouseId == null || warehouseId.isEmpty()) {
+                return new BaseResponseDTO<>(0, getMessage("ORDER_001"), null);
+            }
+
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("USER_001"));
+
+            // 🔍 Kiểm tra nhà cung cấp theo số điện thoại
+            Optional<Supplier> existingSupplier = supplierRepository.findByPhone(request.supplier().phone());
+            if (existingSupplier.isPresent() && !existingSupplier.get().getName().equals(request.supplier().name())) {
+                return new BaseResponseDTO<>(0, getMessage("ORDER_002"), null);
+            }
+
+            Supplier supplier = existingSupplier.orElseGet(() -> {
+                Supplier newSupplier = new Supplier();
+                newSupplier.setSupplierId(generateSupplierId());
+                newSupplier.setName(request.supplier().name());
+                newSupplier.setAddress(request.supplier().address());
+                newSupplier.setPhone(request.supplier().phone());
+                newSupplier.setEmail(request.supplier().email());
+                newSupplier.setLatitude(request.supplier().latitude());
+                newSupplier.setLongitude(request.supplier().longitude());
+                return supplierRepository.save(newSupplier);
+            });
+
+            // 🔍 Kiểm tra người nhận theo số điện thoại
+            Optional<Receiver> existingReceiver = receiverRepository.findByPhone(request.receiver().phone());
+            if (existingReceiver.isPresent() && !existingReceiver.get().getName().equals(request.receiver().name())) {
+                return new BaseResponseDTO<>(0, getMessage("ORDER_003"), null);
+            }
+
+            Receiver receiver = existingReceiver.orElseGet(() -> {
+                Receiver newReceiver = new Receiver();
+                newReceiver.setReceiverId(generateReceiverId());
+                newReceiver.setName(request.receiver().name());
+                newReceiver.setAddress(request.receiver().address());
+                newReceiver.setPhone(request.receiver().phone());
+                newReceiver.setEmail(request.receiver().email());
+                newReceiver.setLatitude(request.receiver().latitude());
+                newReceiver.setLongitude(request.receiver().longitude());
+                return receiverRepository.save(newReceiver);
+            });
+
+            String orderId = generateOrderId();
+
+            Order order = new Order();
+            order.setOrderId(orderId);
+            order.setSupplier(supplier);
+            order.setReceiver(receiver);
+            order.setCreatedAt(LocalDateTime.now());
+            order.setCreatedBy(user.getUserId());
+            order.setStatus(0);
+            order = orderRepository.save(order);
+
+            Warehouse warehouse = warehouseRepository.findById(warehouseId)
+                    .orElseThrow(() -> new RuntimeException("ORDER_001"));
+
+            OrderHistory orderHistory = new OrderHistory();
+            orderHistory.setHistoryId(generateOrderHistoryId());
+            orderHistory.setPerformedBy(user);
+            orderHistory.setPerformedAt(LocalDateTime.now());
+            orderHistory.setOrder(order);
+            orderHistory.setWarehouse(warehouse);
+            orderHistory.setStatus(0);
+            orderHistory.setVersion(1);
+            orderHistoryRepository.saveAndFlush(orderHistory);
+
+            return new BaseResponseDTO<>(1, getMessage("SUCCESS"), orderId);
+
+        } catch (RuntimeException ex) {
+            return new BaseResponseDTO<>(0, getMessage(ex.getMessage()), null);
+        } catch (Exception ex) {
+            return new BaseResponseDTO<>(0, getMessage("SERVER_ERROR"), null);
         }
-
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng: " + username));
-
-        Supplier supplier = supplierRepository.findByNameAndPhone(request.supplier().name(), request.supplier().phone())
-                .orElseGet(() -> {
-                    Supplier newSupplier = new Supplier();
-                    newSupplier.setSupplierId(generateSupplierId());
-                    newSupplier.setName(request.supplier().name());
-                    newSupplier.setAddress(request.supplier().address());
-                    newSupplier.setPhone(request.supplier().phone());
-                    newSupplier.setEmail(request.supplier().email());
-                    newSupplier.setLatitude(request.supplier().latitude());
-                    newSupplier.setLongitude(request.supplier().longitude());
-                    return supplierRepository.save(newSupplier);
-                });
-
-        Receiver receiver = receiverRepository.findByNameAndPhone(request.receiver().name(), request.receiver().phone())
-                .orElseGet(() -> {
-                    Receiver newReceiver = new Receiver();
-                    newReceiver.setReceiverId(generateReceiverId());
-                    newReceiver.setName(request.receiver().name());
-                    newReceiver.setAddress(request.receiver().address());
-                    newReceiver.setPhone(request.receiver().phone());
-                    newReceiver.setEmail(request.receiver().email());
-                    newReceiver.setLatitude(request.receiver().latitude());
-                    newReceiver.setLongitude(request.receiver().longitude());
-                    return receiverRepository.save(newReceiver);
-                });
-
-        String orderId = generateOrderId();
-
-        Order order = new Order();
-        order.setOrderId(orderId);
-        order.setSupplier(supplier);
-        order.setReceiver(receiver);
-        order.setCreatedAt(LocalDateTime.now());
-        order.setCreatedBy(user.getUserId());
-        order.setStatus(0);
-        order = orderRepository.save(order);
-
-        Warehouse warehouse = warehouseRepository.findById(warehouseId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy kho hàng: " + warehouseId));
-
-        OrderHistory orderHistory = new OrderHistory();
-        orderHistory.setHistoryId(generateOrderHistoryId());
-        orderHistory.setPerformedBy(user);
-        orderHistory.setPerformedAt(LocalDateTime.now());
-        orderHistory.setOrder(order);
-        orderHistory.setWarehouse(warehouse);
-        orderHistory.setStatus(0);
-        orderHistory.setVersion(1);
-        orderHistoryRepository.saveAndFlush(orderHistory);
-
-        return new BaseResponseDTO<>(1, getMessage("SUCCESS"), orderId);
     }
 
 

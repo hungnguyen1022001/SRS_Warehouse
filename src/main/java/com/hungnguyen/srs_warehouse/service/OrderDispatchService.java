@@ -15,7 +15,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -31,49 +30,50 @@ public class OrderDispatchService {
 
     @Transactional
     public BaseResponseDTO<String> processOrders(String username, boolean isBatchJob) {
-        if (isBatchJob) {
-            log.info("⚙️ Batch Job dang chay - su dung username: {}", username);
-        } else {
-            log.info("👤 API dang goi - su dung username: {}", username);
+        try {
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("USER_001"));
+
+            List<Order> orders = orderRepository.findTop100ByStatusOrderByCreatedAtAsc(0);
+            if (orders.isEmpty()) {
+                return new BaseResponseDTO<>(0, getMessage("ORDER_004"), null);
+            }
+
+            List<Warehouse> availableWarehouses = warehouseRepository.findWarehousesWithCapacity();
+            if (availableWarehouses.isEmpty()) {
+                return new BaseResponseDTO<>(0, getMessage("WAREHOUSE_001"), null);
+            }
+
+            int processedCount = allocateOrders(orders, availableWarehouses, user);
+
+            return new BaseResponseDTO<>(1, getMessage("DISPATCH_001", processedCount), null);
+
+        } catch (RuntimeException ex) {
+            log.error("Lỗi khi điều phối đơn hàng: {}", ex.getMessage(), ex);
+            return new BaseResponseDTO<>(0, getMessage(ex.getMessage()), null);
+        } catch (Exception ex) {
+            log.error("Lỗi hệ thống khi điều phối đơn hàng: ", ex);
+            return new BaseResponseDTO<>(0, getMessage("SERVER_ERROR"), null);
         }
+    }
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Khong tim thay nguoi dung: " + username));
-
-        List<Order> orders = orderRepository.findTop100ByStatusOrderByCreatedAtAsc(0);
-        if (orders.isEmpty()) {
-            log.info("📭 Khong co don hang nao can xu ly.");
-            return new BaseResponseDTO<>(0, "Khong co don hang nao can dieu phoi.", null);
-        }
-
-        List<Warehouse> availableWarehouses = warehouseRepository.findWarehousesWithCapacity();
-        if (availableWarehouses.isEmpty()) {
-            log.warn("⚠️ Khong co kho nao con suc chua.");
-            return new BaseResponseDTO<>(0, "Khong co kho nao con suc chua.", null);
-        }
-
+    private int allocateOrders(List<Order> orders, List<Warehouse> warehouses, User user) {
         int processedCount = 0;
         for (Order order : orders) {
-            Optional<Warehouse> selectedWarehouse = findNearestWarehouse(order, availableWarehouses);
+            Optional<Warehouse> selectedWarehouse = findNearestWarehouse(order, warehouses);
             if (selectedWarehouse.isPresent()) {
                 allocateOrderToWarehouse(order, selectedWarehouse.get(), user);
                 processedCount++;
-            } else {
-                log.warn("⚠️ Khong co kho phu hop cho don hang: {}", order.getOrderId());
             }
         }
-
-        return new BaseResponseDTO<>(1, "Da dieu phoi thanh cong " + processedCount + " don hang.", null);
+        return processedCount;
     }
 
     private void allocateOrderToWarehouse(Order order, Warehouse warehouse, User user) {
-        log.info("🔄 Dang xu ly don hang {} cho kho {}", order.getOrderId(), warehouse.getName());
-
         if (warehouse.getCapacity() > 0) {
             warehouse.setCapacity(warehouse.getCapacity() - 1);
             warehouseRepository.save(warehouse);
         } else {
-            log.warn("🚨 Kho {} da het suc chua, khong the luu don hang {}", warehouse.getName(), order.getOrderId());
             return;
         }
 
@@ -90,22 +90,17 @@ public class OrderDispatchService {
         order.setWarehouse(warehouse);
         order.setStoredAt(LocalDateTime.now());
         orderRepository.save(order);
-
-        log.info("✅ Don hang {} da duoc luu vao kho {} (Con {} cho trong)", order.getOrderId(), warehouse.getName(), warehouse.getCapacity());
     }
 
     private Optional<Warehouse> findNearestWarehouse(Order order, List<Warehouse> warehouses) {
+        double orderLat = order.getReceiver().getLatitude().doubleValue();
+        double orderLon = order.getReceiver().getLongitude().doubleValue();
+
         return warehouses.stream()
                 .filter(w -> w.getCapacity() > 0)
                 .min((w1, w2) -> Double.compare(
-                        DistanceCalculator.calculateDistance(
-                                w1.getLatitude().doubleValue(), w1.getLongitude().doubleValue(),
-                                order.getReceiver().getLatitude().doubleValue(), order.getReceiver().getLongitude().doubleValue()
-                        ),
-                        DistanceCalculator.calculateDistance(
-                                w2.getLatitude().doubleValue(), w2.getLongitude().doubleValue(),
-                                order.getReceiver().getLatitude().doubleValue(), order.getReceiver().getLongitude().doubleValue()
-                        )
+                        DistanceCalculator.calculateDistance(w1.getLatitude().doubleValue(), w1.getLongitude().doubleValue(), orderLat, orderLon),
+                        DistanceCalculator.calculateDistance(w2.getLatitude().doubleValue(), w2.getLongitude().doubleValue(), orderLat, orderLon)
                 ));
     }
 
@@ -113,5 +108,9 @@ public class OrderDispatchService {
         String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         long count = orderHistoryRepository.countByDate(LocalDate.now()) + 1;
         return String.format("HIS-%s-%05d", datePart, count);
+    }
+
+    private String getMessage(String code, Object... args) {
+        return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
     }
 }

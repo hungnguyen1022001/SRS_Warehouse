@@ -7,4 +7,5 @@ import java.util.Optional;
 @Repository
 public interface SupplierRepository extends JpaRepository<Supplier, String> {
     Optional<Supplier> findByNameAndPhone(String name, String phone);
+    Optional<Supplier> findByPhone(String phone);
 }

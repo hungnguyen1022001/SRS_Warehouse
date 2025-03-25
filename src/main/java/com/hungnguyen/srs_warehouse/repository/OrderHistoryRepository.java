@@ -9,4 +9,6 @@ import java.time.LocalDate;
 public interface OrderHistoryRepository extends JpaRepository <OrderHistory, String> {
     @Query("SELECT COUNT(h) FROM OrderHistory h WHERE FUNCTION('DATE', h.performedAt) = :date")
     long countByDate(LocalDate date);
+
+
 }

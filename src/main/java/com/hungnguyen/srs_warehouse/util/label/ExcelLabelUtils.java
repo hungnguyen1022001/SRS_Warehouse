@@ -31,6 +31,11 @@ public class ExcelLabelUtils {
                 ExcelLabelFillUtils.fillLabelSheet(sheet, dto, workbook);
             }
 
+            int sheetIndex = workbook.getSheetIndex("Sheet1");
+            if (sheetIndex != -1) {
+                workbook.removeSheetAt(sheetIndex);
+            }
+
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
             return outputStream.toByteArray();

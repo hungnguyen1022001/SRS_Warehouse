@@ -2,7 +2,7 @@ package com.hungnguyen.srs_warehouse.service;
 
 import com.hungnguyen.srs_warehouse.model.DTO.BaseResponseDTO;
 import com.hungnguyen.srs_warehouse.repository.OrderRepository;
-import com.hungnguyen.srs_warehouse.util.ExcelReportUtils;
+import com.hungnguyen.srs_warehouse.util.report.ExcelReportUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;

@@ -3,7 +3,7 @@ package com.hungnguyen.srs_warehouse.service;
 import com.hungnguyen.srs_warehouse.model.DTO.orderDetail.OrderLabelDTO;
 import com.hungnguyen.srs_warehouse.mapper.OrderLabelMapper;
 import com.hungnguyen.srs_warehouse.repository.OrderRepository;
-import com.hungnguyen.srs_warehouse.util.ExcelLabelUtils;
+import com.hungnguyen.srs_warehouse.util.label.ExcelLabelUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpHeaders;

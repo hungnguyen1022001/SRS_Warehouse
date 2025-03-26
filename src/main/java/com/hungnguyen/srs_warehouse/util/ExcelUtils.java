@@ -1,8 +1,8 @@
 package com.hungnguyen.srs_warehouse.util;
 
-import com.hungnguyen.srs_warehouse.model.DTO.ordercreate.OrderRequest;
-import com.hungnguyen.srs_warehouse.model.DTO.ordercreate.SupplierRequest;
-import com.hungnguyen.srs_warehouse.model.DTO.ordercreate.ReceiverRequest;
+import com.hungnguyen.srs_warehouse.model.DTO.orderCreate.OrderRequest;
+import com.hungnguyen.srs_warehouse.model.DTO.orderCreate.SupplierRequest;
+import com.hungnguyen.srs_warehouse.model.DTO.orderCreate.ReceiverRequest;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.web.multipart.MultipartFile;

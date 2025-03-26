@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 public class OrderCounter {
     @Id
-    private String date; // "yyyy-MM-dd"
+    private String date;
     private int counter;
 }
 

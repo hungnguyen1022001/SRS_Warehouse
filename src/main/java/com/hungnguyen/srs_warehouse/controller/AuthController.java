@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Controller xử lý xác thực người dùng (Login, Refresh Token)
+ */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor

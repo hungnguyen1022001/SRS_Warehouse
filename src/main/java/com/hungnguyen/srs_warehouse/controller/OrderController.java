@@ -1,21 +1,22 @@
 package com.hungnguyen.srs_warehouse.controller;
 
 import com.hungnguyen.srs_warehouse.model.DTO.OrderSearchCriteria;
-import com.hungnguyen.srs_warehouse.model.DTO.ordercreate.OrderRequest;
+import com.hungnguyen.srs_warehouse.model.DTO.orderCreate.OrderRequest;
 import com.hungnguyen.srs_warehouse.service.OrderService;
 import com.hungnguyen.srs_warehouse.model.DTO.BaseResponseDTO;
 import com.hungnguyen.srs_warehouse.model.DTO.orderDetail.OrderDetailDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controller xử lý các thao tác liên quan đến đơn hàng (Order)
+ */
 @RestController
 @PreAuthorize("isAuthenticated()")
 @RequestMapping("/api/orders")

@@ -1,4 +1,4 @@
-package com.hungnguyen.srs_warehouse.model.DTO.ordercreate;
+package com.hungnguyen.srs_warehouse.model.DTO.orderCreate;
 
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;

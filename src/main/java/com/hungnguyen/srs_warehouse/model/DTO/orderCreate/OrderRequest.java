@@ -1,6 +1,4 @@
-    package com.hungnguyen.srs_warehouse.model.DTO.ordercreate;
-
-    import jakarta.validation.constraints.*;
+    package com.hungnguyen.srs_warehouse.model.DTO.orderCreate;
 
     public record OrderRequest(
             SupplierRequest supplier,

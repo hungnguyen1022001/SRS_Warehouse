@@ -1,7 +1,7 @@
 package com.hungnguyen.srs_warehouse.mapper;
 
-import com.hungnguyen.srs_warehouse.model.DTO.ordercreate.ReceiverRequest;
-import com.hungnguyen.srs_warehouse.model.DTO.ordercreate.SupplierRequest;
+import com.hungnguyen.srs_warehouse.model.DTO.orderCreate.ReceiverRequest;
+import com.hungnguyen.srs_warehouse.model.DTO.orderCreate.SupplierRequest;
 import com.hungnguyen.srs_warehouse.model.Supplier;
 import com.hungnguyen.srs_warehouse.model.Receiver;
 

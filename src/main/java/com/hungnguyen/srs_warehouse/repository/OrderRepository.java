@@ -10,29 +10,58 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.time.LocalDateTime;
 
+/**
+ * Repository xử lý truy vấn dữ liệu cho bảng Order
+ */
 @Repository
 public interface OrderRepository extends JpaRepository<Order, String>, JpaSpecificationExecutor<Order> {
-    // Using JpaSpecificationExecutor for dynamic queries
-//    @Query("SELECT MAX(CAST(SUBSTRING(o.orderId, 10, 5) AS long)) FROM Order o WHERE o.orderId LIKE CONCAT('DH-', :datePart, '-%')")
-//    Long findMaxOrderIdByDate(@Param("datePart") String datePart);
+
+    /**
+     * Lấy danh sách 100 đơn hàng có trạng thái nhất định, sắp xếp theo ngày tạo tăng dần
+     */
     List<Order> findTop100ByStatusOrderByCreatedAtAsc(Integer status);
+
+    /**
+     * Tìm danh sách đơn hàng theo mã đơn hàng
+     */
     List<Order> findByOrderIdContaining(String orderId);
 
+    /**
+     * Lấy danh sách đơn hàng theo danh sách mã đơn hàng
+     */
     List<Order> findByOrderIdIn(List<String> orderIds);
 
-    @Query("SELECT o.warehouse.warehouseId, o.warehouse.name, FUNCTION('DATE', o.storedAt), COUNT(o) " +
-            "FROM Order o " +
-            "WHERE o.warehouse.warehouseId IN :warehouseIds " +
-            "AND o.storedAt BETWEEN :startDate AND :endDate " +
-            "GROUP BY o.warehouse.warehouseId, o.warehouse.name, FUNCTION('DATE', o.storedAt) " +
-            "ORDER BY o.warehouse.warehouseId, FUNCTION('DATE', o.storedAt)")
-    List<Object[]> getOrderStatisticsByDay(List<String> warehouseIds, LocalDateTime startDate, LocalDateTime endDate);
+    /**
+     * Thống kê số lượng đơn hàng theo ngày cho các kho hàng được chọn
+     */
+    @Query("""
+        SELECT o.warehouse.warehouseId, o.warehouse.name, FUNCTION('DATE', o.storedAt), COUNT(o)
+        FROM Order o
+        WHERE o.warehouse.warehouseId IN :warehouseIds
+        AND o.storedAt BETWEEN :startDate AND :endDate
+        GROUP BY o.warehouse.warehouseId, o.warehouse.name, FUNCTION('DATE', o.storedAt)
+        ORDER BY o.warehouse.warehouseId, FUNCTION('DATE', o.storedAt)
+    """)
+    List<Object[]> getOrderStatisticsByDay(
+            @Param("warehouseIds") List<String> warehouseIds,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
 
-    @Query("SELECT o.warehouse.warehouseId, o.warehouse.name, FUNCTION('DATE_FORMAT', o.storedAt, '%Y-%m'), COUNT(o) " +
-            "FROM Order o " +
-            "WHERE o.warehouse.warehouseId IN :warehouseIds " +
-            "AND o.storedAt BETWEEN :startDate AND :endDate " +
-            "GROUP BY o.warehouse.warehouseId, o.warehouse.name, FUNCTION('DATE_FORMAT', o.storedAt, '%Y-%m') " +
-            "ORDER BY o.warehouse.warehouseId, FUNCTION('DATE_FORMAT', o.storedAt, '%Y-%m')")
-    List<Object[]> getOrderStatisticsByMonth(List<String> warehouseIds, LocalDateTime startDate, LocalDateTime endDate);
+    /**
+     * Thống kê số lượng đơn hàng theo tháng cho các kho hàng được chọn
+     */
+    @Query("""
+        SELECT o.warehouse.warehouseId, o.warehouse.name, FUNCTION('DATE_FORMAT', o.storedAt, '%Y-%m'), COUNT(o)
+        FROM Order o
+        WHERE o.warehouse.warehouseId IN :warehouseIds
+        AND o.storedAt BETWEEN :startDate AND :endDate
+        GROUP BY o.warehouse.warehouseId, o.warehouse.name, FUNCTION('DATE_FORMAT', o.storedAt, '%Y-%m')
+        ORDER BY o.warehouse.warehouseId, FUNCTION('DATE_FORMAT', o.storedAt, '%Y-%m')
+    """)
+    List<Object[]> getOrderStatisticsByMonth(
+            @Param("warehouseIds") List<String> warehouseIds,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
 }

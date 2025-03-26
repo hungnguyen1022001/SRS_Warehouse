@@ -29,6 +29,7 @@ public class JwtUtils {
         long expiration = isRefreshToken ? refreshExpirationMs : jwtExpirationMs;
 
         return Jwts.builder()
+                .setHeaderParam("typ", "JWT")
                 .setSubject(username)
                 .claim("warehouseId", warehouseId)
                 .setIssuedAt(new Date())

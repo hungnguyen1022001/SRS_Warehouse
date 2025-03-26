@@ -28,7 +28,7 @@ import java.util.UUID;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
-
+import java.util.List;
 import java.util.Optional;
 
 
@@ -183,6 +183,8 @@ public class OrderService {
     }
 
 
+
+
     private synchronized String generateSupplierId() {
         long count = supplierRepository.count() + 1;
         return String.format("SUP-%03d", count);
@@ -228,6 +230,30 @@ public class OrderService {
 
         OrderDetailDTO orderDetailDTO = orderDetailMapper.toOrderDetailDTO(optionalOrder.get());
         return new BaseResponseDTO<>(1, getMessage("SUCCESS"), orderDetailDTO);
+    }
+
+    public BaseResponseDTO<List<String>> getOrderIds(String orderId) {
+        List<String> orderIds;
+
+        if (orderId != null && !orderId.isEmpty()) {
+            // Nếu có orderId, tìm những mã đơn hàng chứa orderId
+            orderIds = orderRepository.findByOrderIdContaining(orderId)
+                    .stream()
+                    .map(Order::getOrderId)
+                    .collect(Collectors.toList());
+        } else {
+            // Nếu không có orderId, lấy toàn bộ mã đơn hàng
+            orderIds = orderRepository.findAll()
+                    .stream()
+                    .map(Order::getOrderId)
+                    .collect(Collectors.toList());
+        }
+
+        if (orderIds.isEmpty()) {
+            return new BaseResponseDTO<>(0, getMessage("ORDER_001"), null);
+        }
+
+        return new BaseResponseDTO<>(1, getMessage("SUCCESS"), orderIds);
     }
 
 }

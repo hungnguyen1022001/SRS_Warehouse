@@ -1,13 +1,11 @@
 package com.hungnguyen.srs_warehouse.controller.orderimport;
 
+import com.hungnguyen.srs_warehouse.model.DTO.BaseResponseDTO;
 import com.hungnguyen.srs_warehouse.service.orderimport.ImportOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/import-orders")
@@ -20,18 +18,19 @@ public class ImportOrderController {
         this.importOrderService = importOrderService;
     }
 
-    @PostMapping()
-    public ResponseEntity<Map<String, Object>> importOrdersFromExcel(
+    @PostMapping
+    public ResponseEntity<BaseResponseDTO<?>> importOrdersFromExcel(
             @RequestParam("file") MultipartFile file,
             @RequestHeader("Authorization") String token) {
 
         if (file == null || file.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("status", 0, "message", "Không tìm thấy file upload hoặc file trống!"));
+            BaseResponseDTO<?> response = new BaseResponseDTO<>(0, "Không tìm thấy file upload hoặc file trống!", null);
+            return ResponseEntity.badRequest().body(response);
         }
 
         String jwtToken = token.replace("Bearer ", "");
-        Map<String, Object> result = importOrderService.importOrders(file, jwtToken);
-        HttpStatus status = (int) result.get("status") == 1 ? HttpStatus.OK : HttpStatus.BAD_REQUEST;
-        return new ResponseEntity<>(result, status);
+        BaseResponseDTO<?> result = importOrderService.importOrders(file, jwtToken);
+
+        return ResponseEntity.status(result.getStatus() == 1 ? 200 : 400).body(result);
     }
 }

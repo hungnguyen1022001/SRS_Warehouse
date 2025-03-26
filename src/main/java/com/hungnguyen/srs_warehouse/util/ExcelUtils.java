@@ -18,6 +18,12 @@ public class ExcelUtils {
 
     private static final String ERROR_FILE_DIR = System.getProperty("user.home") + "/Desktop";
 
+    /**
+     * Đọc file Excel và parse thành danh sách OrderRequest.
+     * @param file      File Excel tải lên.
+     * @param errorRows Danh sách lỗi khi đọc file.
+     * @return Danh sách OrderRequest hợp lệ.
+     */
     public static List<OrderRequest> parseExcelFile(MultipartFile file, List<Map<String, String>> errorRows) {
         List<OrderRequest> validOrders = new ArrayList<>();
 
@@ -25,11 +31,11 @@ public class ExcelUtils {
             Sheet sheet = workbook.getSheetAt(0);
             int rowCount = sheet.getPhysicalNumberOfRows();
 
-            for (int i = 2; i < rowCount; i++) { // Bỏ qua hàng tiêu đề (Hàng 1 & 2)
+            for (int i = 2; i < rowCount; i++) { // Bỏ qua header
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
 
-                // Nếu STT không hợp lệ hoặc rỗng, dừng xử lý file
+                // Kiểm tra nếu STT rỗng, kết thúc vòng lặp
                 if (row.getCell(0) == null || row.getCell(0).getCellType() == CellType.BLANK) {
                     break;
                 }
@@ -50,6 +56,13 @@ public class ExcelUtils {
         return validOrders;
     }
 
+    /**
+     * Parse một hàng dữ liệu trong file Excel thành OrderRequest.
+     * @param row       Hàng dữ liệu hiện tại.
+     * @param rowIndex  Số thứ tự hàng trong file.
+     * @param errorRows Danh sách lỗi nếu có.
+     * @return Đối tượng OrderRequest hoặc null nếu có lỗi.
+     */
     private static OrderRequest parseOrderRow(Row row, int rowIndex, List<Map<String, String>> errorRows) {
         try {
             SupplierRequest supplier = new SupplierRequest(
@@ -77,6 +90,12 @@ public class ExcelUtils {
         }
     }
 
+    /**
+     * Tạo file lỗi Excel chứa danh sách lỗi.
+     * @param file      File Excel gốc.
+     * @param errorRows Danh sách lỗi.
+     * @return Đường dẫn file lỗi đã tạo.
+     */
     public static String generateErrorFile(MultipartFile file, List<Map<String, String>> errorRows) {
         String fileName = "INB_ImportError_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".xlsx";
         Path filePath = Paths.get(ERROR_FILE_DIR, fileName);
@@ -85,16 +104,15 @@ public class ExcelUtils {
              FileOutputStream fos = new FileOutputStream(filePath.toFile())) {
 
             Sheet sheet = workbook.getSheetAt(0);
-            Row headerRow = sheet.getRow(1);
-            Cell errorHeaderCell = headerRow.createCell(headerRow.getLastCellNum());
-            errorHeaderCell.setCellValue("Thông tin lỗi");
+            int lastColumn = sheet.getRow(1).getLastCellNum();
+
+            sheet.getRow(1).createCell(lastColumn).setCellValue("Thông tin lỗi");
 
             for (Map<String, String> error : errorRows) {
                 int rowIndex = Integer.parseInt(error.get("Row"));
                 Row row = sheet.getRow(rowIndex - 1);
                 if (row != null) {
-                    Cell errorCell = row.createCell(row.getLastCellNum());
-                    errorCell.setCellValue(error.get("Error"));
+                    row.createCell(lastColumn).setCellValue(error.get("Error"));
                 }
             }
 
@@ -105,6 +123,7 @@ public class ExcelUtils {
         }
     }
 
+    // ✅ Các phương thức validate dữ liệu
     private static String validateString(Cell cell, String fieldName, int maxLength, int rowIndex, List<Map<String, String>> errorRows) {
         if (cell == null || cell.getCellType() == CellType.BLANK) {
             errorRows.add(Map.of("Row", String.valueOf(rowIndex), "Error", fieldName + " không được để trống"));
@@ -118,44 +137,22 @@ public class ExcelUtils {
     }
 
     private static String validatePhone(Cell cell, String fieldName, int rowIndex, List<Map<String, String>> errorRows) {
-        String phone = "";
-
-        if (cell == null || cell.getCellType() == CellType.BLANK) {
-            errorRows.add(Map.of("Row", String.valueOf(rowIndex), "Error", fieldName + " không được để trống"));
-        } else {
-            if (cell.getCellType() == CellType.NUMERIC) {
-                phone = new java.text.DecimalFormat("0").format(cell.getNumericCellValue()); // Giữ số 0 đầu
-            } else {
-                phone = cell.getStringCellValue().trim();
-            }
-        }
-
+        String phone = cell != null ? cell.toString().trim() : "";
         if (!phone.matches("^0\\d{9,10}$")) {
             errorRows.add(Map.of("Row", String.valueOf(rowIndex), "Error", fieldName + " không đúng định dạng (bắt đầu bằng 0, 10-11 chữ số)"));
         }
-
         return phone;
     }
 
     private static String validateEmail(Cell cell, String fieldName, int rowIndex, List<Map<String, String>> errorRows) {
-        if (cell == null || cell.getCellType() == CellType.BLANK) {
-            errorRows.add(Map.of("Row", String.valueOf(rowIndex), "Error", fieldName + " không được để trống"));
-            return "";
-        }
-        String email = cell.getStringCellValue().trim().toLowerCase();
-
+        String email = cell != null ? cell.toString().trim().toLowerCase() : "";
         if (!email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
             errorRows.add(Map.of("Row", String.valueOf(rowIndex), "Error", fieldName + " không đúng định dạng email hợp lệ"));
         }
-
         return email;
     }
 
     private static BigDecimal validateBigDecimal(Cell cell, String fieldName, BigDecimal min, BigDecimal max, int rowIndex, List<Map<String, String>> errorRows) {
-        if (cell == null || cell.getCellType() == CellType.BLANK) {
-            errorRows.add(Map.of("Row", String.valueOf(rowIndex), "Error", fieldName + " không được để trống"));
-            return BigDecimal.ZERO;
-        }
         try {
             BigDecimal value = new BigDecimal(cell.toString().trim());
             if (value.compareTo(min) < 0 || value.compareTo(max) > 0) {

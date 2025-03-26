@@ -10,18 +10,20 @@ import java.awt.image.BufferedImage;
 
 public class BarcodeUtils {
 
+    // 🔹 Tạo Barcode với kích thước 238x94
     public static BufferedImage generateBarcode(String text) {
         try {
-            BitMatrix bitMatrix = new MultiFormatWriter().encode(text, BarcodeFormat.CODE_128, 300, 100);
+            BitMatrix bitMatrix = new MultiFormatWriter().encode(text, BarcodeFormat.CODE_128, 238, 94);
             return MatrixToImageWriter.toBufferedImage(bitMatrix);
         } catch (WriterException e) {
             throw new RuntimeException("Lỗi tạo Barcode", e);
         }
     }
 
+    // 🔹 Tạo QR Code với kích thước 269x265
     public static BufferedImage generateQRCode(String text) {
         try {
-            BitMatrix bitMatrix = new MultiFormatWriter().encode(text, BarcodeFormat.QR_CODE, 200, 200);
+            BitMatrix bitMatrix = new MultiFormatWriter().encode(text, BarcodeFormat.QR_CODE, 269, 265);
             return MatrixToImageWriter.toBufferedImage(bitMatrix);
         } catch (WriterException e) {
             throw new RuntimeException("Lỗi tạo QR Code", e);

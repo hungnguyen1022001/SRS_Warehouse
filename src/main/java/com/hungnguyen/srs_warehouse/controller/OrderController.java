@@ -7,14 +7,17 @@ import com.hungnguyen.srs_warehouse.model.DTO.BaseResponseDTO;
 import com.hungnguyen.srs_warehouse.model.DTO.orderDetail.OrderDetailDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
 import java.util.List;
 import java.util.Map;
 
 @RestController
+@PreAuthorize("isAuthenticated()")
 @RequestMapping("/api/orders")
 public class OrderController {
 
@@ -59,10 +62,16 @@ public class OrderController {
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(401)
-                    .body(new BaseResponseDTO<>(0, "Unauthorized - Missing Bearer Token", null));
+                    .body(new BaseResponseDTO<>(0, "UNAUTHORIZED", null));
         }
 
         String token = authHeader.substring(7);
         return ResponseEntity.ok(orderService.createOrder(request, token));
+    }
+
+    @GetMapping("/ids")
+    public ResponseEntity<BaseResponseDTO<List<String>>> getOrderIds(
+            @RequestParam(required = false) String orderId) {
+        return ResponseEntity.ok(orderService.getOrderIds(orderId));
     }
 }

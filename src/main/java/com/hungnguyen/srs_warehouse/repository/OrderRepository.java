@@ -16,6 +16,7 @@ public interface OrderRepository extends JpaRepository<Order, String>, JpaSpecif
 //    @Query("SELECT MAX(CAST(SUBSTRING(o.orderId, 10, 5) AS long)) FROM Order o WHERE o.orderId LIKE CONCAT('DH-', :datePart, '-%')")
 //    Long findMaxOrderIdByDate(@Param("datePart") String datePart);
     List<Order> findTop100ByStatusOrderByCreatedAtAsc(Integer status);
+    List<Order> findByOrderIdContaining(String orderId);
 
     List<Order> findByOrderIdIn(List<String> orderIds);
 

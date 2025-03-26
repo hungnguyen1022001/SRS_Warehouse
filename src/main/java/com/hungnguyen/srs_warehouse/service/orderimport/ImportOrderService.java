@@ -1,6 +1,7 @@
 package com.hungnguyen.srs_warehouse.service.orderimport;
 
 import com.hungnguyen.srs_warehouse.model.*;
+import com.hungnguyen.srs_warehouse.model.DTO.BaseResponseDTO;
 import com.hungnguyen.srs_warehouse.model.DTO.ordercreate.OrderRequest;
 import com.hungnguyen.srs_warehouse.mapper.OrderCreateMapper;
 import com.hungnguyen.srs_warehouse.repository.*;
@@ -26,6 +27,7 @@ public class ImportOrderService {
     private final WarehouseRepository warehouseRepository;
     private final OrderCreateMapper orderCreateMapper;
     private final MessageSource messageSource;
+    private final OrderCounterRepository orderCounterRepository;
     private final JwtUtils jwtUtils;
 
     @Autowired
@@ -36,6 +38,7 @@ public class ImportOrderService {
                               WarehouseRepository warehouseRepository,
                               OrderCreateMapper orderCreateMapper,
                               MessageSource messageSource,
+                              OrderCounterRepository orderCounterRepository,
                               JwtUtils jwtUtils) {
         this.orderRepository = orderRepository;
         this.supplierRepository = supplierRepository;
@@ -45,16 +48,17 @@ public class ImportOrderService {
         this.orderCreateMapper = orderCreateMapper;
         this.messageSource = messageSource;
         this.jwtUtils = jwtUtils;
+        this.orderCounterRepository = orderCounterRepository;
     }
 
     @Transactional
-    public Map<String, Object> importOrders(MultipartFile file, String token) {
+    public BaseResponseDTO<?> importOrders(MultipartFile file, String token) {
         List<Map<String, String>> errorRows = new ArrayList<>();
         List<OrderRequest> validOrders = ExcelUtils.parseExcelFile(file, errorRows);
 
         if (!errorRows.isEmpty()) {
             String errorFilePath = ExcelUtils.generateErrorFile(file, errorRows);
-            return Map.of("status", 0, "message", getMessage("FAIL"), "errorFile", errorFilePath);
+            return new BaseResponseDTO<>(0, getMessage("EXCEL_IMPORT_ERROR"), errorFilePath);
         }
 
         // ✅ Lấy thông tin user từ JWT Token
@@ -62,21 +66,23 @@ public class ImportOrderService {
         String warehouseId = jwtUtils.getWarehouseIdFromToken(token);
 
         if (warehouseId == null || warehouseId.isEmpty()) {
-            throw new RuntimeException("Không tìm thấy warehouseId trong token!");
+            return new BaseResponseDTO<>(0, getMessage("WAREHOUSE_NOT_FOUND"), null);
         }
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng: " + username));
+                .orElseThrow(() -> new RuntimeException(getMessage("USER_001")));
 
         Warehouse warehouse = warehouseRepository.findById(warehouseId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy kho hàng: " + warehouseId));
+                .orElseThrow(() -> new RuntimeException(getMessage("WAREHOUSE_NOT_FOUND")));
 
+        List<String> orderIds = new ArrayList<>();
         for (OrderRequest dto : validOrders) {
             Order order = processOrderRequest(dto, user, warehouse);
-            orderRepository.save(order);  // ✅ Lưu từng order một
+            orderRepository.save(order);
+            orderIds.add(order.getOrderId());
         }
 
-        return Map.of("status", 1, "message", getMessage("SUCCESS"));
+        return new BaseResponseDTO<>(1, getMessage("SUCCESS"), orderIds);
     }
 
     private Order processOrderRequest(OrderRequest dto, User user, Warehouse warehouse) {
@@ -94,8 +100,9 @@ public class ImportOrderService {
                     return receiverRepository.save(newReceiver);
                 });
 
+        String orderId = generateOrderId();
         Order order = new Order();
-        order.setOrderId(generateOrderId());
+        order.setOrderId(orderId);
         order.setSupplier(supplier);
         order.setReceiver(receiver);
         order.setCreatedAt(java.time.LocalDateTime.now());
@@ -116,10 +123,21 @@ public class ImportOrderService {
         return String.format("REC-%03d", count);
     }
 
-    private synchronized String generateOrderId() {
+    private synchronized int getNextOrderNumber() {
+        String today = LocalDate.now().toString();
+        OrderCounter counter = orderCounterRepository.findById(today)
+                .orElseGet(() -> new OrderCounter(today, 0));
+
+        counter.setCounter(counter.getCounter() + 1);
+        orderCounterRepository.save(counter);
+
+        return counter.getCounter();
+    }
+
+    private String generateOrderId() {
         String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
-        long count = orderRepository.count() + 1;
-        return String.format("DH-%s-%05d", datePart, count);
+        int sequence = getNextOrderNumber();
+        return String.format("DH-%s-%05d", datePart, sequence);
     }
 
     private String getMessage(String code) {

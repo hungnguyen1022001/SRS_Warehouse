@@ -34,18 +34,18 @@ public class ExcelLabelUtils {
         int senderLastRow = setMultiLineValue(sheet, 8, 1, dto.supplier().address(), workbook);
         int receiverLastRow = setMultiLineValue(sheet, 8, 9, dto.receiver().address(), workbook);
 
-        setValue(sheet, senderLastRow + 1, 1, "SĐT: " + dto.supplier().phone(), workbook);
-        setValue(sheet, receiverLastRow + 1, 9, "SĐT: " + dto.receiver().phone(), workbook);
+        setValue(sheet, senderLastRow + 1, 1, "SĐT: " + dto.supplier().phone(), workbook, false, false);
+        setValue(sheet, receiverLastRow + 1, 9, "SĐT: " + dto.receiver().phone(), workbook, false, false);
 
-        setValue(sheet, 3, 12, dto.orderId(), workbook);
-        setValue(sheet, 25, 11, dto.orderId(), workbook);
-        setValue(sheet, 25, 12, dto.createdAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")), workbook);
+        setValue(sheet, 3, 12, dto.orderId(), workbook, false, false);
+        setValue(sheet, 25, 11, "Ngày đặt hàng", workbook, true, true);
+        setValue(sheet, 26, 11, dto.createdAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")), workbook, true, false);
 
-        setValue(sheet, 7, 1, dto.supplier().name(), workbook);
-        setValue(sheet, 7, 9, dto.receiver().name(), workbook);
+        setValue(sheet, 7, 1, dto.supplier().name(), workbook, false, false);
+        setValue(sheet, 7, 9, dto.receiver().name(), workbook, false, false);
 
-        setValue(sheet, 17, 2, dto.warehouse().name(), workbook);
-        setValue(sheet, 17, 12, dto.warehouse().warehouseId(), workbook);
+        setValue(sheet, 17, 2, dto.warehouse().name(), workbook, true, true);
+        setValue(sheet, 17, 12, dto.warehouse().warehouseId(), workbook, true, true);
     }
 
     private static void clearData(Sheet sheet) {
@@ -53,7 +53,7 @@ public class ExcelLabelUtils {
                 {7, 1}, {8, 1}, {9, 1}, {10, 1}, {11, 1},
                 {7, 9}, {8, 9}, {9, 9},
                 {17, 2}, {17, 12},
-                {25, 11}, {25, 12}, {26, 11}, {26, 12},
+                {25, 11}, {26, 12}, {27, 11},
                 {11, 2},
                 {9, 10}
         };
@@ -77,28 +77,40 @@ public class ExcelLabelUtils {
 
         String[] lines = value.split("\n");
         for (int i = 0; i < lines.length; i++) {
-            setValue(sheet, row + i, col, lines[i], workbook);
+            setValue(sheet, row + i, col, lines[i], workbook, false, false);
         }
         return row + lines.length - 1;
     }
 
-    private static void setValue(Sheet sheet, int row, int col, String value, Workbook workbook) {
+    private static void setValue(Sheet sheet, int row, int col, String value, Workbook workbook, boolean isBoldLarge, boolean isCenterAligned) {
         if (value == null) return;
         Row targetRow = sheet.getRow(row);
         if (targetRow == null) targetRow = sheet.createRow(row);
         Cell cell = targetRow.createCell(col);
         cell.setCellValue(value);
-        cell.setCellStyle(defaultCellStyle(workbook));
+        cell.setCellStyle(getCellStyle(workbook, isBoldLarge, isCenterAligned));
     }
 
-    private static CellStyle defaultCellStyle(Workbook workbook) {
+    private static CellStyle getCellStyle(Workbook workbook, boolean isBoldLarge, boolean isCenterAligned) {
         CellStyle style = workbook.createCellStyle();
         Font font = workbook.createFont();
         font.setFontName("Arial");
-        font.setFontHeightInPoints((short) 11);
+
+        font.setFontHeightInPoints(isBoldLarge ? (short) 12 : (short) 9);
+        if (isBoldLarge && isCenterAligned) {
+            font.setFontHeightInPoints((short) 11);
+        }
+
+        font.setBold(isBoldLarge);
         style.setFont(font);
-        style.setWrapText(true);
-        style.setVerticalAlignment(VerticalAlignment.TOP);
+
+        if (isCenterAligned) {
+            style.setVerticalAlignment(VerticalAlignment.CENTER);
+            style.setAlignment(HorizontalAlignment.CENTER);
+        } else {
+            style.setVerticalAlignment(VerticalAlignment.BOTTOM);
+        }
+
         return style;
     }
 

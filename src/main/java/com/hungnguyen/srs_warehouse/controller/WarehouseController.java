@@ -1,18 +1,27 @@
 package com.hungnguyen.srs_warehouse.controller;
 
-
-import com.hungnguyen.srs_warehouse.model.Warehouse;
+import com.hungnguyen.srs_warehouse.dto.BaseResponseDTO;
 import com.hungnguyen.srs_warehouse.service.WarehouseService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/warehouses")
 public class WarehouseController {
 
-   
+    private final WarehouseService warehouseService;
 
-    
+    @Autowired
+    public WarehouseController(WarehouseService warehouseService) {
+        this.warehouseService = warehouseService;
+    }
+
+    @GetMapping("/ids")
+    public ResponseEntity<BaseResponseDTO<List<String>>> getWarehouseIds() {
+        BaseResponseDTO<List<String>> response = warehouseService.getAllWarehouseIds();
+        return ResponseEntity.status(response.getStatus() == 1 ? 200 : 404).body(response);
+    }
 }

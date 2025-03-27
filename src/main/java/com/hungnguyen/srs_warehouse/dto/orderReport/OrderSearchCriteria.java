@@ -1,9 +1,13 @@
-package com.hungnguyen.srs_warehouse.model.DTO;
+package com.hungnguyen.srs_warehouse.dto.orderReport;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class OrderSearchCriteria {
     private String orderId;
     private String phone;

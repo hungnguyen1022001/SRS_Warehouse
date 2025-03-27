@@ -1,4 +1,4 @@
-package com.hungnguyen.srs_warehouse.model.DTO;
+package com.hungnguyen.srs_warehouse.dto.orderList;
 
 import lombok.Data;
 import java.time.LocalDateTime;

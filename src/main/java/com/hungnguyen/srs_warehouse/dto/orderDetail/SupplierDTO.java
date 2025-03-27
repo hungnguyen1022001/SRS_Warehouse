@@ -1,9 +1,8 @@
-package com.hungnguyen.srs_warehouse.model.DTO.orderDetail;
+package com.hungnguyen.srs_warehouse.dto.orderDetail;
 
-public record ReceiverDTO(
+public record SupplierDTO(
         String name,
         String address,
         String phone,
         String email
 ) {}
-

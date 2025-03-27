@@ -1,47 +1,28 @@
 package com.hungnguyen.srs_warehouse.mapper;
 
-
-import com.hungnguyen.srs_warehouse.model.DTO.OrderListDTO;
 import com.hungnguyen.srs_warehouse.model.Order;
-import org.springframework.stereotype.Component;
+import com.hungnguyen.srs_warehouse.dto.orderList.OrderListDTO;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.factory.Mappers;
 
-@Component
-public class OrderMapper {
+import java.util.List;
 
-    public OrderListDTO toOrderListDTO(Order order) {
-        OrderListDTO dto = new OrderListDTO();
-        dto.setOrderId(order.getOrderId());
-        dto.setCreatedAt(order.getCreatedAt());
-        dto.setStatus(order.getStatus());
+@Mapper(componentModel = "spring")
+public interface OrderMapper {
+    OrderMapper INSTANCE = Mappers.getMapper(OrderMapper.class);
 
-        // Warehouse info
-        if (order.getWarehouse() != null) {
-            dto.setWarehouseId(order.getWarehouse().getWarehouseId());
-            dto.setWarehouseName(order.getWarehouse().getName());
-        }
+    @Mapping(source = "warehouse.warehouseId", target = "warehouseId")
+    @Mapping(source = "warehouse.name", target = "warehouseName")
+    @Mapping(source = "supplier.name", target = "supplierName")
+    @Mapping(source = "supplier.address", target = "supplierAddress")
+    @Mapping(source = "supplier.phone", target = "supplierPhone")
+    @Mapping(source = "supplier.email", target = "supplierEmail")
+    @Mapping(source = "receiver.name", target = "receiverName")
+    @Mapping(source = "receiver.address", target = "receiverAddress")
+    @Mapping(source = "receiver.phone", target = "receiverPhone")
+    @Mapping(source = "receiver.email", target = "receiverEmail")
+    OrderListDTO toOrderListDTO(Order order);
 
-        // Supplier info
-        if (order.getSupplier() != null) {
-            dto.setSupplierName(order.getSupplier().getName());
-            dto.setSupplierAddress(order.getSupplier().getAddress());
-            dto.setSupplierPhone(order.getSupplier().getPhone());
-            dto.setSupplierEmail(order.getSupplier().getEmail());
-        }
-
-        // Receiver info
-        if (order.getReceiver() != null) {
-            dto.setReceiverName(order.getReceiver().getName());
-            dto.setReceiverAddress(order.getReceiver().getAddress());
-            dto.setReceiverPhone(order.getReceiver().getPhone());
-            dto.setReceiverEmail(order.getReceiver().getEmail());
-        }
-
-        // Order dates
-        dto.setStoredAt(order.getStoredAt());
-        dto.setDeliveredAt(order.getDeliveredAt());
-        dto.setFailedDeliveries(order.getFailedDeliveries());
-        dto.setReturnAt(order.getReturnAt());
-
-        return dto;
-    }
+    List<OrderListDTO> toOrderListDTOs(List<Order> orders);
 }

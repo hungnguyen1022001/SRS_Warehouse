@@ -1,6 +1,6 @@
 package com.hungnguyen.srs_warehouse.controller;
 
-import com.hungnguyen.srs_warehouse.model.DTO.BaseResponseDTO;
+import com.hungnguyen.srs_warehouse.dto.BaseResponseDTO;
 import com.hungnguyen.srs_warehouse.service.OrderDispatchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

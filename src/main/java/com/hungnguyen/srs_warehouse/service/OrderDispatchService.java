@@ -1,13 +1,11 @@
 package com.hungnguyen.srs_warehouse.service;
 
 import com.hungnguyen.srs_warehouse.model.*;
-import com.hungnguyen.srs_warehouse.model.DTO.BaseResponseDTO;
+import com.hungnguyen.srs_warehouse.dto.BaseResponseDTO;
 import com.hungnguyen.srs_warehouse.repository.*;
 import com.hungnguyen.srs_warehouse.util.DistanceCalculator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -24,7 +22,6 @@ public class OrderDispatchService {
     private final WarehouseRepository warehouseRepository;
     private final OrderHistoryRepository orderHistoryRepository;
     private final UserRepository userRepository;
-    private final MessageSource messageSource;
 
     /**
      * Xử lý điều phối đơn hàng
@@ -40,21 +37,21 @@ public class OrderDispatchService {
 
             List<Order> orders = orderRepository.findTop100ByStatusOrderByCreatedAtAsc(0);
             if (orders.isEmpty()) {
-                return new BaseResponseDTO<>(0, getMessage("ORDER_004"), null);
+                return BaseResponseDTO.fail("ORDER_004");
             }
 
             List<Warehouse> availableWarehouses = warehouseRepository.findWarehousesWithCapacity();
             if (availableWarehouses.isEmpty()) {
-                return new BaseResponseDTO<>(0, getMessage("WAREHOUSE_001"), null);
+                return BaseResponseDTO.fail("WAREHOUSE_001");
             }
 
             int processedCount = allocateOrders(orders, availableWarehouses, user);
-            return new BaseResponseDTO<>(1, getMessage("DISPATCH_001", processedCount), null);
+            return BaseResponseDTO.success("DISPATCH_001", String.valueOf(processedCount));
 
         } catch (RuntimeException ex) {
-            return new BaseResponseDTO<>(0, getMessage(ex.getMessage()), null);
+            return BaseResponseDTO.fail(ex.getMessage());
         } catch (Exception ex) {
-            return new BaseResponseDTO<>(0, getMessage("SERVER_ERROR"), null);
+            return BaseResponseDTO.fail("SERVER_ERROR");
         }
     }
 
@@ -132,15 +129,5 @@ public class OrderDispatchService {
         String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         long count = orderHistoryRepository.countByDate(LocalDate.now()) + 1;
         return String.format("HIS-%s-%05d", datePart, count);
-    }
-
-    /**
-     * Lấy message theo mã lỗi từ file messages.properties
-     * @param code Mã lỗi
-     * @param args Tham số động nếu có
-     * @return Thông điệp tương ứng với mã lỗi
-     */
-    private String getMessage(String code, Object... args) {
-        return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
     }
 }

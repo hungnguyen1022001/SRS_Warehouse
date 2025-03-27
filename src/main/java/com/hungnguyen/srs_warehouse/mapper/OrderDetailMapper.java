@@ -1,6 +1,6 @@
 package com.hungnguyen.srs_warehouse.mapper;
 
-import com.hungnguyen.srs_warehouse.model.DTO.orderDetail.*;
+import com.hungnguyen.srs_warehouse.dto.orderDetail.*;
 import com.hungnguyen.srs_warehouse.model.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

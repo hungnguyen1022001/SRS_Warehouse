@@ -1,7 +1,7 @@
 package com.hungnguyen.srs_warehouse.service;
 
-import com.hungnguyen.srs_warehouse.model.DTO.AuthRequestDTO;
-import com.hungnguyen.srs_warehouse.model.DTO.AuthResponseDTO;
+import com.hungnguyen.srs_warehouse.dto.auth.AuthRequestDTO;
+import com.hungnguyen.srs_warehouse.dto.auth.AuthResponseDTO;
 import com.hungnguyen.srs_warehouse.model.User;
 import com.hungnguyen.srs_warehouse.repository.UserRepository;
 import com.hungnguyen.srs_warehouse.security.jwt.JwtUtils;

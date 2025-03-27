@@ -1,7 +1,7 @@
 package com.hungnguyen.srs_warehouse.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hungnguyen.srs_warehouse.model.DTO.BaseResponseDTO;
+import com.hungnguyen.srs_warehouse.dto.BaseResponseDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

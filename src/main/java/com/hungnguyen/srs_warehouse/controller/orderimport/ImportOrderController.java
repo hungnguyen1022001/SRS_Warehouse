@@ -1,6 +1,6 @@
 package com.hungnguyen.srs_warehouse.controller.orderimport;
 
-import com.hungnguyen.srs_warehouse.model.DTO.BaseResponseDTO;
+import com.hungnguyen.srs_warehouse.dto.BaseResponseDTO;
 import com.hungnguyen.srs_warehouse.service.orderimport.ImportOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

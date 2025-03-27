@@ -1,6 +1,6 @@
 package com.hungnguyen.srs_warehouse.util.label;
 
-import com.hungnguyen.srs_warehouse.model.DTO.orderDetail.OrderLabelDTO;
+import com.hungnguyen.srs_warehouse.dto.orderDetail.OrderLabelDTO;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 

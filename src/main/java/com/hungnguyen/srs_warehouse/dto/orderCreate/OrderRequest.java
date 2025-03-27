@@ -1,4 +1,4 @@
-    package com.hungnguyen.srs_warehouse.model.DTO.orderCreate;
+    package com.hungnguyen.srs_warehouse.dto.orderCreate;
 
     public record OrderRequest(
             SupplierRequest supplier,

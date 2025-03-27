@@ -1,7 +1,7 @@
 package com.hungnguyen.srs_warehouse.controller;
 
-import com.hungnguyen.srs_warehouse.model.DTO.AuthRequestDTO;
-import com.hungnguyen.srs_warehouse.model.DTO.AuthResponseDTO;
+import com.hungnguyen.srs_warehouse.dto.auth.AuthRequestDTO;
+import com.hungnguyen.srs_warehouse.dto.auth.AuthResponseDTO;
 import com.hungnguyen.srs_warehouse.security.jwt.JwtUtils;
 import com.hungnguyen.srs_warehouse.service.AuthService;
 import lombok.RequiredArgsConstructor;

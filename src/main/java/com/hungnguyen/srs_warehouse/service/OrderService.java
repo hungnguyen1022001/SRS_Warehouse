@@ -1,11 +1,11 @@
 package com.hungnguyen.srs_warehouse.service;
 
+import com.hungnguyen.srs_warehouse.dto.orderDetail.OrderDetailDTO;
 import com.hungnguyen.srs_warehouse.model.*;
-import com.hungnguyen.srs_warehouse.model.DTO.OrderListResponse;
-import com.hungnguyen.srs_warehouse.model.DTO.orderDetail.*;
-import com.hungnguyen.srs_warehouse.model.DTO.BaseResponseDTO;
-import com.hungnguyen.srs_warehouse.model.DTO.OrderSearchCriteria;
-import com.hungnguyen.srs_warehouse.model.DTO.orderCreate.OrderRequest;
+import com.hungnguyen.srs_warehouse.dto.orderList.OrderListResponse;
+import com.hungnguyen.srs_warehouse.dto.BaseResponseDTO;
+import com.hungnguyen.srs_warehouse.dto.orderReport.OrderSearchCriteria;
+import com.hungnguyen.srs_warehouse.dto.orderCreate.OrderRequest;
 import com.hungnguyen.srs_warehouse.mapper.OrderCreateMapper;
 import com.hungnguyen.srs_warehouse.mapper.OrderMapper;
 import com.hungnguyen.srs_warehouse.mapper.OrderDetailMapper;
@@ -14,7 +14,6 @@ import com.hungnguyen.srs_warehouse.security.jwt.JwtUtils;
 import com.hungnguyen.srs_warehouse.specification.OrderSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
@@ -24,8 +23,6 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.List;
 import java.util.Optional;
@@ -74,29 +71,23 @@ public class OrderService {
         this.orderCounterRepository = orderCounterRepository;
     }
 
-    public Map<String, Object> getOrderList(OrderSearchCriteria criteria) {
+    public BaseResponseDTO<OrderListResponse> getOrderList(OrderSearchCriteria criteria) {
         Specification<Order> spec = OrderSpecification.withSearchCriteria(criteria);
         Page<Order> orderPage = orderRepository.findAll(spec, PageRequest.of(criteria.getPage(), criteria.getSize()));
 
-        boolean isSearchingByIdOrPhone = (criteria.getOrderId() != null && !criteria.getOrderId().isEmpty())
-                || (criteria.getPhone() != null && !criteria.getPhone().isEmpty());
-
-        if (isSearchingByIdOrPhone && orderPage.isEmpty()) {
-            return Map.of("status", 0, "message", getMessage("ORDER_001"));
+        if (orderPage.isEmpty()) {
+            return BaseResponseDTO.fail("ORDER_001");
         }
 
-        return Map.of(
-                "status", orderPage.isEmpty() ? 0 : 1,
-                "message", getMessage(orderPage.isEmpty() ? "ORDER_001" : "SUCCESS"),
-                "data", new OrderListResponse(
-                        orderPage.getContent().stream().map(orderMapper::toOrderListDTO).collect(Collectors.toList()),
-                        orderPage.getTotalElements(),
-                        criteria.getPage(),
-                        criteria.getSize()
-                )
+        OrderListResponse response = new OrderListResponse(
+                orderMapper.toOrderListDTOs(orderPage.getContent()),
+                orderPage.getTotalElements(),
+                criteria.getPage(),
+                criteria.getSize()
         );
-    }
 
+        return BaseResponseDTO.success("SUCCESS", response);
+    }
 
 
     @Transactional
@@ -106,16 +97,15 @@ public class OrderService {
             String warehouseId = jwtUtils.getWarehouseIdFromToken(token);
 
             if (warehouseId == null || warehouseId.isEmpty()) {
-                return new BaseResponseDTO<>(0, getMessage("ORDER_001"), null);
+                return BaseResponseDTO.fail("ORDER_001");
             }
 
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("USER_001"));
 
-            // 🔍 Kiểm tra nhà cung cấp theo số điện thoại
             Optional<Supplier> existingSupplier = supplierRepository.findByPhone(request.supplier().phone());
             if (existingSupplier.isPresent() && !existingSupplier.get().getName().equals(request.supplier().name())) {
-                return new BaseResponseDTO<>(0, getMessage("ORDER_002"), null);
+                return BaseResponseDTO.fail("ORDER_002");
             }
 
             Supplier supplier = existingSupplier.orElseGet(() -> {
@@ -130,10 +120,9 @@ public class OrderService {
                 return supplierRepository.save(newSupplier);
             });
 
-            // 🔍 Kiểm tra người nhận theo số điện thoại
             Optional<Receiver> existingReceiver = receiverRepository.findByPhone(request.receiver().phone());
             if (existingReceiver.isPresent() && !existingReceiver.get().getName().equals(request.receiver().name())) {
-                return new BaseResponseDTO<>(0, getMessage("ORDER_003"), null);
+                return BaseResponseDTO.fail("ORDER_003");
             }
 
             Receiver receiver = existingReceiver.orElseGet(() -> {
@@ -172,17 +161,42 @@ public class OrderService {
             orderHistory.setVersion(1);
             orderHistoryRepository.saveAndFlush(orderHistory);
 
-            return new BaseResponseDTO<>(1, getMessage("SUCCESS"), orderId);
+            return BaseResponseDTO.success("SUCCESS", orderId);
 
         } catch (RuntimeException ex) {
-            return new BaseResponseDTO<>(0, getMessage(ex.getMessage()), null);
+            return BaseResponseDTO.fail(ex.getMessage());
         } catch (Exception ex) {
-            return new BaseResponseDTO<>(0, getMessage("SERVER_ERROR"), null);
+            return BaseResponseDTO.fail("SERVER_ERROR");
         }
     }
 
+    public BaseResponseDTO<OrderDetailDTO> getOrderDetail(String orderId) {
+        return orderRepository.findById(orderId)
+                .map(order -> BaseResponseDTO.success("SUCCESS", orderDetailMapper.toOrderDetailDTO(order)))
+                .orElseGet(() -> BaseResponseDTO.fail("ORDER_001"));
+    }
 
+    public BaseResponseDTO<List<String>> getOrderIds(String orderId) {
+        List<String> orderIds;
 
+        if (orderId != null && !orderId.isEmpty()) {
+            orderIds = orderRepository.findByOrderIdContaining(orderId)
+                    .stream()
+                    .map(Order::getOrderId)
+                    .collect(Collectors.toList());
+        } else {
+            orderIds = orderRepository.findAll()
+                    .stream()
+                    .map(Order::getOrderId)
+                    .collect(Collectors.toList());
+        }
+
+        if (orderIds.isEmpty()) {
+            return BaseResponseDTO.fail("ORDER_001");
+        }
+
+        return BaseResponseDTO.success("SUCCESS", orderIds);
+    }
 
     private synchronized String generateSupplierId() {
         long count = supplierRepository.count() + 1;
@@ -215,44 +229,4 @@ public class OrderService {
         int sequence = getNextOrderNumber();
         return String.format("DH-%s-%05d", datePart, sequence);
     }
-
-    private String getMessage(String code) {
-        Locale locale = LocaleContextHolder.getLocale();
-        return messageSource.getMessage(code, null, locale);
-    }
-    public BaseResponseDTO<OrderDetailDTO> getOrderDetail(String orderId) {
-        Optional<Order> optionalOrder = orderRepository.findById(orderId);
-
-        if (optionalOrder.isEmpty()) {
-            return new BaseResponseDTO<>(0, getMessage("ORDER_001"), null);
-        }
-
-        OrderDetailDTO orderDetailDTO = orderDetailMapper.toOrderDetailDTO(optionalOrder.get());
-        return new BaseResponseDTO<>(1, getMessage("SUCCESS"), orderDetailDTO);
-    }
-
-    public BaseResponseDTO<List<String>> getOrderIds(String orderId) {
-        List<String> orderIds;
-
-        if (orderId != null && !orderId.isEmpty()) {
-            // Nếu có orderId, tìm những mã đơn hàng chứa orderId
-            orderIds = orderRepository.findByOrderIdContaining(orderId)
-                    .stream()
-                    .map(Order::getOrderId)
-                    .collect(Collectors.toList());
-        } else {
-            // Nếu không có orderId, lấy toàn bộ mã đơn hàng
-            orderIds = orderRepository.findAll()
-                    .stream()
-                    .map(Order::getOrderId)
-                    .collect(Collectors.toList());
-        }
-
-        if (orderIds.isEmpty()) {
-            return new BaseResponseDTO<>(0, getMessage("ORDER_001"), null);
-        }
-
-        return new BaseResponseDTO<>(1, getMessage("SUCCESS"), orderIds);
-    }
-
 }

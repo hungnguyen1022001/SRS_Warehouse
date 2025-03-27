@@ -9,5 +9,8 @@ import java.util.List;
 public interface WarehouseRepository extends JpaRepository<Warehouse, String> {
     @Query("SELECT w FROM Warehouse w WHERE w.capacity > 0")
     List<Warehouse> findWarehousesWithCapacity();
+
+    @Query("SELECT w.warehouseId FROM Warehouse w")
+    List<String> findAllWarehouseIds();
 }
 

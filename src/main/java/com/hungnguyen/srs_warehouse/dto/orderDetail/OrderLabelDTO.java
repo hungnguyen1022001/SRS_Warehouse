@@ -1,4 +1,4 @@
-package com.hungnguyen.srs_warehouse.model.DTO.orderDetail;
+package com.hungnguyen.srs_warehouse.dto.orderDetail;
 import java.time.LocalDateTime;
 public record OrderLabelDTO(
         String orderId,

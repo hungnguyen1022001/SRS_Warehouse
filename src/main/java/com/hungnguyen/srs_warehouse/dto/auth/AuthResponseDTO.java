@@ -1,4 +1,4 @@
-package com.hungnguyen.srs_warehouse.model.DTO;
+package com.hungnguyen.srs_warehouse.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

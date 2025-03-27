@@ -1,6 +1,6 @@
 package com.hungnguyen.srs_warehouse.specification;
 
-import com.hungnguyen.srs_warehouse.model.DTO.OrderSearchCriteria;
+import com.hungnguyen.srs_warehouse.dto.orderReport.OrderSearchCriteria;
 import com.hungnguyen.srs_warehouse.model.Order;
 import com.hungnguyen.srs_warehouse.model.Receiver;
 import com.hungnguyen.srs_warehouse.model.Supplier;

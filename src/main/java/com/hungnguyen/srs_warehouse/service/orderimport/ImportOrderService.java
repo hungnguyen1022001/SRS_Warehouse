@@ -1,8 +1,8 @@
 package com.hungnguyen.srs_warehouse.service.orderimport;
 
 import com.hungnguyen.srs_warehouse.model.*;
-import com.hungnguyen.srs_warehouse.model.DTO.BaseResponseDTO;
-import com.hungnguyen.srs_warehouse.model.DTO.orderCreate.OrderRequest;
+import com.hungnguyen.srs_warehouse.dto.BaseResponseDTO;
+import com.hungnguyen.srs_warehouse.dto.orderCreate.OrderRequest;
 import com.hungnguyen.srs_warehouse.mapper.OrderCreateMapper;
 import com.hungnguyen.srs_warehouse.repository.*;
 import com.hungnguyen.srs_warehouse.security.jwt.JwtUtils;

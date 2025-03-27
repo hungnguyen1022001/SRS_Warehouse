@@ -1,4 +1,4 @@
-package com.hungnguyen.srs_warehouse.model.DTO.orderDispatch;
+package com.hungnguyen.srs_warehouse.dto.orderDispatch;
 
 import lombok.Getter;
 import lombok.Setter;

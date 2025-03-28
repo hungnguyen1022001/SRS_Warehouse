@@ -1,4 +1,4 @@
-package com.hungnguyen.srs_warehouse.dto.orderReport;
+package com.hungnguyen.srs_warehouse.dto.orderList;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,7 +12,7 @@ public class OrderSearchCriteria {
     private String orderId;
     private String phone;
     private Integer status;
-    private List<String> warehouseIds;
+    private String warehouseId;
     private int page = 0;
     private int size = 10;
 }

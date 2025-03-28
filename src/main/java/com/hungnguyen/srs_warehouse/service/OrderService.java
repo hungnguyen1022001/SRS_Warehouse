@@ -4,7 +4,7 @@ import com.hungnguyen.srs_warehouse.dto.orderDetail.OrderDetailDTO;
 import com.hungnguyen.srs_warehouse.model.*;
 import com.hungnguyen.srs_warehouse.dto.orderList.OrderListResponse;
 import com.hungnguyen.srs_warehouse.dto.BaseResponseDTO;
-import com.hungnguyen.srs_warehouse.dto.orderReport.OrderSearchCriteria;
+import com.hungnguyen.srs_warehouse.dto.orderList.OrderSearchCriteria;
 import com.hungnguyen.srs_warehouse.dto.orderCreate.OrderRequest;
 import com.hungnguyen.srs_warehouse.mapper.OrderCreateMapper;
 import com.hungnguyen.srs_warehouse.mapper.OrderMapper;
@@ -12,13 +12,18 @@ import com.hungnguyen.srs_warehouse.mapper.OrderDetailMapper;
 import com.hungnguyen.srs_warehouse.repository.*;
 import com.hungnguyen.srs_warehouse.security.jwt.JwtUtils;
 import com.hungnguyen.srs_warehouse.specification.OrderSpecification;
+
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.userdetails.UserDetails;
+
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,10 +42,7 @@ public class OrderService {
     private final OrderHistoryRepository orderHistoryRepository;
     private final SupplierRepository supplierRepository;
     private final ReceiverRepository receiverRepository;
-    private final OrderCreateMapper orderCreateMapper;
     private final OrderMapper orderMapper;
-    private final MessageSource messageSource;
-    private final JwtUtils jwtUtils;
     private final OrderCounterRepository orderCounterRepository;
     private final OrderDetailMapper orderDetailMapper;
 
@@ -53,7 +55,6 @@ public class OrderService {
                         UserRepository userRepository,
                         OrderCreateMapper orderCreateMapper,
                         OrderMapper orderMapper,
-                        MessageSource messageSource,
                         JwtUtils jwtUtils,
                         OrderDetailMapper orderDetailMapper,
                         OrderCounterRepository orderCounterRepository) {
@@ -63,11 +64,8 @@ public class OrderService {
         this.receiverRepository = receiverRepository;
         this.warehouseRepository = warehouseRepository;
         this.userRepository = userRepository;
-        this.orderCreateMapper = orderCreateMapper;
         this.orderMapper = orderMapper;
         this.orderDetailMapper = orderDetailMapper;
-        this.messageSource = messageSource;
-        this.jwtUtils = jwtUtils;
         this.orderCounterRepository = orderCounterRepository;
     }
 
@@ -91,17 +89,25 @@ public class OrderService {
 
 
     @Transactional
-    public BaseResponseDTO<String> createOrder(OrderRequest request, String token) {
+    public BaseResponseDTO<String> createOrder(OrderRequest request) {
         try {
-            String username = jwtUtils.getUsernameFromToken(token);
-            String warehouseId = jwtUtils.getWarehouseIdFromToken(token);
 
-            if (warehouseId == null || warehouseId.isEmpty()) {
-                return BaseResponseDTO.fail("ORDER_001");
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return BaseResponseDTO.fail("AUTH_001");
             }
+
+            Object principal = authentication.getPrincipal();
+            String username = (principal instanceof UserDetails) ? ((UserDetails) principal).getUsername() : principal.toString();
+
 
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new RuntimeException("USER_001"));
+
+            String warehouseId = user.getWarehouse() != null ? user.getWarehouse().getWarehouseId() : null;
+            if (warehouseId == null || warehouseId.isEmpty()) {
+                return BaseResponseDTO.fail("ORDER_001");
+            }
 
             Optional<Supplier> existingSupplier = supplierRepository.findByPhone(request.supplier().phone());
             if (existingSupplier.isPresent() && !existingSupplier.get().getName().equals(request.supplier().name())) {

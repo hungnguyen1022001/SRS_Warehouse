@@ -1,6 +1,6 @@
 package com.hungnguyen.srs_warehouse.specification;
 
-import com.hungnguyen.srs_warehouse.dto.orderReport.OrderSearchCriteria;
+import com.hungnguyen.srs_warehouse.dto.orderList.OrderSearchCriteria;
 import com.hungnguyen.srs_warehouse.model.Order;
 import com.hungnguyen.srs_warehouse.model.Receiver;
 import com.hungnguyen.srs_warehouse.model.Supplier;
@@ -50,10 +50,11 @@ public class OrderSpecification {
             }
 
             // Warehouse filter
-            if (criteria.getWarehouseIds() != null && !criteria.getWarehouseIds().isEmpty()) {
+            if (criteria.getWarehouseId() != null) {
                 Join<Order, Warehouse> warehouseJoin = root.join("warehouse");
-                predicates.add(warehouseJoin.get("warehouseId").in(criteria.getWarehouseIds()));
+                predicates.add(criteriaBuilder.equal(warehouseJoin.get("warehouseId"), criteria.getWarehouseId()));
             }
+
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };

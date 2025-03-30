@@ -1,10 +1,15 @@
 package com.hungnguyen.srs_warehouse.repository;
 
+import com.hungnguyen.srs_warehouse.dto.report.WarehouseReportDTO;
 import com.hungnguyen.srs_warehouse.model.Warehouse;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
+
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 @Repository
@@ -19,4 +24,7 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, String> {
 
     @EntityGraph(attributePaths = {"warehouseId", "name", "address"})
     Warehouse findByWarehouseId(String warehouseId);
+
+
+
 }

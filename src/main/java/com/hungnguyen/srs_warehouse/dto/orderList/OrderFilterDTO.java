@@ -3,12 +3,11 @@ package com.hungnguyen.srs_warehouse.dto.orderList;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderSearchCriteria {
+public class OrderFilterDTO {
     private String orderId;
     private String phone;
     private Integer status;

@@ -1,6 +1,6 @@
 package com.hungnguyen.srs_warehouse.specification;
 
-import com.hungnguyen.srs_warehouse.dto.orderList.OrderSearchCriteria;
+import com.hungnguyen.srs_warehouse.dto.orderList.OrderFilterDTO;
 import com.hungnguyen.srs_warehouse.model.Order;
 import com.hungnguyen.srs_warehouse.model.Receiver;
 import com.hungnguyen.srs_warehouse.model.Supplier;
@@ -14,7 +14,7 @@ import java.util.List;
 
 public class OrderSpecification {
 
-    public static Specification<Order> withSearchCriteria(OrderSearchCriteria criteria) {
+    public static Specification<Order> withSearchCriteria(OrderFilterDTO criteria) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 

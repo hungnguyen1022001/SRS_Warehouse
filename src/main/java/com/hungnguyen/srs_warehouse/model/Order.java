@@ -19,15 +19,15 @@ public class Order {
     @Column(name = "ORDER_ID", length = 20, nullable = false)
     private String orderId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "SUPPLIER_ID")
     private Supplier supplier;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "RECEIVER_ID")
     private Receiver receiver;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "WAREHOUSE_ID")
     private Warehouse warehouse;
 
@@ -55,6 +55,6 @@ public class Order {
     @Column(name = "RETURN_AT")
     private LocalDateTime returnAt;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<OrderHistory> orderHistories;
 }

@@ -4,7 +4,7 @@ import com.hungnguyen.srs_warehouse.dto.orderDetail.OrderDetailDTO;
 import com.hungnguyen.srs_warehouse.model.*;
 import com.hungnguyen.srs_warehouse.dto.orderList.OrderListResponse;
 import com.hungnguyen.srs_warehouse.dto.BaseResponseDTO;
-import com.hungnguyen.srs_warehouse.dto.orderList.OrderSearchCriteria;
+import com.hungnguyen.srs_warehouse.dto.orderList.OrderFilterDTO;
 import com.hungnguyen.srs_warehouse.dto.orderCreate.OrderRequest;
 import com.hungnguyen.srs_warehouse.mapper.OrderCreateMapper;
 import com.hungnguyen.srs_warehouse.mapper.OrderMapper;
@@ -69,7 +69,7 @@ public class OrderService {
         this.orderCounterRepository = orderCounterRepository;
     }
 
-    public BaseResponseDTO<OrderListResponse> getOrderList(OrderSearchCriteria criteria) {
+    public BaseResponseDTO<OrderListResponse> getOrderList(OrderFilterDTO criteria) {
         Specification<Order> spec = OrderSpecification.withSearchCriteria(criteria);
         Page<Order> orderPage = orderRepository.findAll(spec, PageRequest.of(criteria.getPage(), criteria.getSize()));
 

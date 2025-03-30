@@ -19,7 +19,7 @@ public class OrderHistory {
     @Column(name = "history_id", length = 36, nullable = false, updatable = false)
     private String historyId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "performed_by", nullable = false)
     private User performedBy;
 
@@ -27,11 +27,11 @@ public class OrderHistory {
     @Column(name = "performed_at", nullable = false, updatable = false)
     private LocalDateTime performedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "warehouse_id", nullable = false)
     private Warehouse warehouse;
 

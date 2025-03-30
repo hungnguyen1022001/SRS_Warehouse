@@ -14,9 +14,8 @@ public class OrderDispatchJob {
 
     private final OrderDispatchService orderDispatchService;
 
-    @Scheduled(fixedRate = 600000) // Chạy mỗi 20 phút
+    @Scheduled(fixedRate = 600000)
     public void runBatchJob() {
-        log.info("🚀 Batch Job - Dang chay dieu phoi don hang...");
         BaseResponseDTO<String> response = orderDispatchService.processOrders("username1", true);
         log.info("✅ Batch Job hoan thanh: {}", response.getMessage());
     }

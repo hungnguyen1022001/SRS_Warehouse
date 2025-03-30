@@ -1,6 +1,6 @@
 package com.hungnguyen.srs_warehouse.controller;
 
-import com.hungnguyen.srs_warehouse.dto.orderList.OrderSearchCriteria;
+import com.hungnguyen.srs_warehouse.dto.orderList.OrderFilterDTO;
 import com.hungnguyen.srs_warehouse.dto.orderCreate.OrderRequest;
 import com.hungnguyen.srs_warehouse.service.OrderService;
 import com.hungnguyen.srs_warehouse.dto.BaseResponseDTO;
@@ -38,7 +38,7 @@ public class OrderController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        OrderSearchCriteria criteria = new OrderSearchCriteria(orderId, phone, status, warehouseId, page, size);
+        OrderFilterDTO criteria = new OrderFilterDTO(orderId, phone, status, warehouseId, page, size);
         BaseResponseDTO<OrderListResponse> response = orderService.getOrderList(criteria);
 
         return ResponseEntity.status(response.getStatus() == 1 ? 200 : 400).body(response);

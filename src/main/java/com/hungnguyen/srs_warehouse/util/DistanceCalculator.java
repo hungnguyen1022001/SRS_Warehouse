@@ -13,20 +13,20 @@ public class DistanceCalculator {
     /**
      * Tính khoảng cách giữa hai điểm trên Trái Đất sử dụng công thức Haversine.
      *
-     * @param lat1 Vĩ độ điểm 1
-     * @param lon1 Kinh độ điểm 1
-     * @param lat2 Vĩ độ điểm 2
-     * @param lon2 Kinh độ điểm 2
+     * @param latitude1  Vĩ độ điểm thứ nhất
+     * @param longitude1 Kinh độ điểm thứ nhất
+     * @param latitude2  Vĩ độ điểm thứ hai
+     * @param longitude2 Kinh độ điểm thứ hai
      * @return Khoảng cách tính bằng kilomet (km)
      */
-    public static double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
+    public static double calculateDistance(double latitude1, double longitude1, double latitude2, double longitude2) {
+        double deltaLatitude = Math.toRadians(latitude2 - latitude1);
+        double deltaLongitude = Math.toRadians(longitude2 - longitude1);
 
-        double a = Math.pow(Math.sin(dLat / 2), 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.pow(Math.sin(dLon / 2), 2);
+        double haversineFormula = Math.pow(Math.sin(deltaLatitude / 2), 2)
+                + Math.cos(Math.toRadians(latitude1)) * Math.cos(Math.toRadians(latitude2))
+                * Math.pow(Math.sin(deltaLongitude / 2), 2);
 
-        return 2 * EARTH_RADIUS_KM * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return 2 * EARTH_RADIUS_KM * Math.atan2(Math.sqrt(haversineFormula), Math.sqrt(1 - haversineFormula));
     }
 }

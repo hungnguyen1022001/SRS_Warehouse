@@ -9,7 +9,7 @@ import com.hungnguyen.srs_warehouse.mapper.OrderDetailMapper;
 import com.hungnguyen.srs_warehouse.model.*;
 import com.hungnguyen.srs_warehouse.repository.*;
 import com.hungnguyen.srs_warehouse.service.OrderService;
-import com.hungnguyen.srs_warehouse.util.IdGeneratorUtils;
+import com.hungnguyen.srs_warehouse.util.IdGeneratorUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -36,7 +36,7 @@ public class OrderServiceImpl implements OrderService {
     private final SupplierRepository supplierRepository;
     private final ReceiverRepository receiverRepository;
     private final OrderDetailMapper orderDetailMapper;
-    private final IdGeneratorUtils idGeneratorUtil;
+    private final IdGeneratorUtil idGeneratorUtil;
 
     @Autowired
     public OrderServiceImpl(OrderRepository orderRepository,
@@ -46,7 +46,7 @@ public class OrderServiceImpl implements OrderService {
                             WarehouseRepository warehouseRepository,
                             UserRepository userRepository,
                             OrderDetailMapper orderDetailMapper,
-                            IdGeneratorUtils idGeneratorUtil) {
+                            IdGeneratorUtil idGeneratorUtil) {
         this.orderRepository = orderRepository;
         this.orderHistoryRepository = orderHistoryRepository;
         this.supplierRepository = supplierRepository;

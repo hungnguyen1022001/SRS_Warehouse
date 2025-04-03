@@ -34,7 +34,7 @@ public class OrderDispatchServiceImpl implements OrderDispatchService {
 
             List<Order> orders = orderRepository.findTop100ByStatusOrderByCreatedAtAsc(0);
             if (orders.isEmpty()) {
-                throw new CustomExceptions.NotFoundException("ORDER_001");
+                return BaseResponseDTO.fail("ORDER_001");
             }
 
             List<Warehouse> availableWarehouses = warehouseRepository.findWarehousesWithCapacity();

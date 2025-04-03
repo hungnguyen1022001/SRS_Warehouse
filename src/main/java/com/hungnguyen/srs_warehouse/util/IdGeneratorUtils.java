@@ -10,15 +10,15 @@ import java.util.Optional;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 @Component
-public class IdGeneratorUtil {
+public class IdGeneratorUtils {
 
     private final SupplierRepository supplierRepository;
     private final ReceiverRepository receiverRepository;
     private final OrderHistoryRepository orderHistoryRepository;
     private final OrderRepository orderRepository;
 
-    public IdGeneratorUtil(SupplierRepository supplierRepository, ReceiverRepository receiverRepository,
-                           OrderHistoryRepository orderHistoryRepository, OrderRepository orderRepository) {
+    public IdGeneratorUtils(SupplierRepository supplierRepository, ReceiverRepository receiverRepository,
+                            OrderHistoryRepository orderHistoryRepository, OrderRepository orderRepository) {
         this.supplierRepository = supplierRepository;
         this.receiverRepository = receiverRepository;
         this.orderHistoryRepository = orderHistoryRepository;

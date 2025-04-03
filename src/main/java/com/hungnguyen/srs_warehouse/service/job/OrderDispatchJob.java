@@ -1,4 +1,4 @@
-package com.hungnguyen.srs_warehouse.job;
+package com.hungnguyen.srs_warehouse.service.job;
 
 import com.hungnguyen.srs_warehouse.service.OrderDispatchService;
 import com.hungnguyen.srs_warehouse.dto.BaseResponseDTO;

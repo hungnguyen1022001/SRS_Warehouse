@@ -21,7 +21,6 @@ public class WarehouseController {
 
     @GetMapping("/ids")
     public ResponseEntity<BaseResponseDTO<List<String>>> getWarehouseIds() {
-        BaseResponseDTO<List<String>> response = warehouseService.getAllWarehouseIds();
-        return ResponseEntity.status(response.getStatus() == 1 ? 200 : 404).body(response);
+        return ResponseEntity.ok(warehouseService.getAllWarehouseIds());
     }
 }

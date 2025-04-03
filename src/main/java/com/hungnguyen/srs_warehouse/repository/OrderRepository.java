@@ -1,70 +1,53 @@
 package com.hungnguyen.srs_warehouse.repository;
 
+import com.hungnguyen.srs_warehouse.constants.OrderQueryConstants;
 import com.hungnguyen.srs_warehouse.model.Order;
 import com.hungnguyen.srs_warehouse.dto.report.OrderReportByDayDTO;
 import com.hungnguyen.srs_warehouse.dto.report.OrderReportByMonthDTO;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.time.LocalDate;
 
-/**
- * Repository xử lý truy vấn dữ liệu cho bảng Order
- */
 @Repository
 public interface OrderRepository extends JpaRepository<Order, String>, JpaSpecificationExecutor<Order> {
 
-    /**
-     * Lấy danh sách 100 đơn hàng có trạng thái nhất định, sắp xếp theo ngày tạo tăng dần
-     */
-    List<Order> findTop100ByStatusOrderByCreatedAtAsc(Integer status);
+    List<Order> findTop100ByStatusOrderByCreatedAtAsc(@Param("status") Integer status);
 
-    /**
-     * Tìm danh sách đơn hàng theo mã đơn hàng
-     */
-    List<Order> findByOrderIdContaining(String orderId);
+    List<Order> findByOrderIdContaining(@Param("orderId") String orderId);
 
-    /**
-     * Lấy danh sách đơn hàng theo danh sách mã đơn hàng
-     */
-    List<Order> findByOrderIdIn(List<String> orderIds);
+    List<Order> findByOrderIdIn(@Param("orderIds") List<String> orderIds);
 
-    @Query("SELECT new com.hungnguyen.srs_warehouse.dto.report.OrderReportByDayDTO(" +
-           "w.warehouseId, w.name, o.storedAt, COUNT(o.orderId)) " +
-           "FROM Order o " +
-           "JOIN o.warehouse w " +
-           "WHERE w.warehouseId IN :warehouseIds " +
-           "AND o.storedAt BETWEEN :startDate AND :endDate " +
-           "GROUP BY w.warehouseId, w.name, o.storedAt " +
-           "ORDER BY w.warehouseId, o.storedAt")
+    @Query(OrderQueryConstants.SEARCH_ORDERS)
+    Page<Order> searchOrders(
+            @Param("orderId") String orderId,
+            @Param("phone") String phone,
+            @Param("status") Integer status,
+            @Param("warehouseId") String warehouseId,
+            Pageable pageable
+    );
+
+    @Query(OrderQueryConstants.ORDER_REPORT_BY_DAY)
     List<OrderReportByDayDTO> getOrderReportByDay(
             @Param("warehouseIds") List<String> warehouseIds,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
 
-
-    /**
-     * Báo cáo đơn hàng theo tháng (sử dụng YearMonth)
-     */
-    @Query("SELECT new com.hungnguyen.srs_warehouse.dto.report.OrderReportByMonthDTO(" +
-           "w.warehouseId, w.name, EXTRACT(YEAR FROM o.storedAt), EXTRACT(MONTH FROM o.storedAt), COUNT(o.id)) " +
-           "FROM Order o " +
-           "JOIN o.warehouse w " +
-           "WHERE w.warehouseId IN :warehouseIds " +
-           "AND o.storedAt BETWEEN :startDate AND :endDate " +
-           "GROUP BY w.warehouseId, w.name, EXTRACT(YEAR FROM o.storedAt), EXTRACT(MONTH FROM o.storedAt) " +
-           "ORDER BY w.warehouseId, EXTRACT(YEAR FROM o.storedAt), EXTRACT(MONTH FROM o.storedAt)")
+    @Query(OrderQueryConstants.ORDER_REPORT_BY_MONTH)
     List<OrderReportByMonthDTO> getOrderReportByMonth(
             @Param("warehouseIds") List<String> warehouseIds,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
 
+    @Query(OrderQueryConstants.FIND_MAX_ORDER_ID_FOR_TODAY)
+    String findMaxOrderIdForToday(@Param("datePart") String datePart);
 
 }

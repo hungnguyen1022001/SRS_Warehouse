@@ -1,4 +1,4 @@
-package com.hungnguyen.srs_warehouse.impl;
+package com.hungnguyen.srs_warehouse.service.impl;
 
 import com.hungnguyen.srs_warehouse.repository.UserRepository;
 import com.hungnguyen.srs_warehouse.security.jwt.JwtUtils;

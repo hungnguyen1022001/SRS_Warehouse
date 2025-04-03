@@ -1,11 +1,9 @@
 package com.hungnguyen.srs_warehouse.controller;
 
-import com.hungnguyen.srs_warehouse.dto.orderList.OrderFilterDTO;
 import com.hungnguyen.srs_warehouse.dto.orderCreate.OrderRequest;
 import com.hungnguyen.srs_warehouse.service.OrderService;
 import com.hungnguyen.srs_warehouse.dto.BaseResponseDTO;
 import com.hungnguyen.srs_warehouse.dto.orderDetail.OrderDetailDTO;
-import com.hungnguyen.srs_warehouse.dto.orderList.OrderListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.util.List;
-
+import java.util.Map;
 /**
  * Controller xử lý các thao tác liên quan đến đơn hàng (Order)
  */
@@ -30,39 +28,31 @@ public class OrderController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<BaseResponseDTO<OrderListResponse>> getOrderList(
+    public ResponseEntity<BaseResponseDTO<Map<String, Object>>> getOrderList(
             @RequestParam(required = false) String orderId,
             @RequestParam(required = false) String phone,
             @RequestParam(required = false) Integer status,
             @RequestParam(required = false) String warehouseId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer limit) {
 
-        OrderFilterDTO criteria = new OrderFilterDTO(orderId, phone, status, warehouseId, page, size);
-        BaseResponseDTO<OrderListResponse> response = orderService.getOrderList(criteria);
-
-        return ResponseEntity.status(response.getStatus() == 1 ? 200 : 400).body(response);
+        return ResponseEntity.ok(orderService.getOrderList(orderId,phone,status,warehouseId,page,limit));
     }
 
     @GetMapping("/detail/{orderId}")
     public ResponseEntity<BaseResponseDTO<OrderDetailDTO>> getOrderDetail(@PathVariable String orderId) {
-        BaseResponseDTO<OrderDetailDTO> response = orderService.getOrderDetail(orderId);
-        return ResponseEntity.status(response.getStatus() == 1 ? 200 : 400).body(response);
+        return ResponseEntity.ok(orderService.getOrderDetail(orderId));
     }
 
     @PostMapping("/create")
     public ResponseEntity<BaseResponseDTO<String>> createOrder(
             @Valid @RequestBody OrderRequest request) {
-
-        BaseResponseDTO<String> response = orderService.createOrder(request);
-        return ResponseEntity.status(response.getStatus() == 1 ? 200 : 400).body(response);
+        return ResponseEntity.ok(orderService.createOrder(request));
     }
 
     @GetMapping("/ids")
     public ResponseEntity<BaseResponseDTO<List<String>>> getOrderIds(
             @RequestParam(required = false) String orderId) {
-
-        BaseResponseDTO<List<String>> response = orderService.getOrderIds(orderId);
-        return ResponseEntity.status(response.getStatus() == 1 ? 200 : 400).body(response);
+        return ResponseEntity.ok(orderService.getOrderIds(orderId));
     }
 }

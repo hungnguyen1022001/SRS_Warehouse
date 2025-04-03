@@ -1,54 +1,52 @@
 package com.hungnguyen.srs_warehouse.exception;
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
+import com.hungnguyen.srs_warehouse.dto.BaseResponseDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private final MessageSource messageSource;
-
-    public GlobalExceptionHandler(MessageSource messageSource) {
-        this.messageSource = messageSource;
-    }
-
-    private String getMessage(String code) {
-        Locale locale = LocaleContextHolder.getLocale();
-        return messageSource.getMessage(code, null, locale);
-    }
-
     // Xử lý lỗi chung (Exception)
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", 0);
-        response.put("message", getMessage("SERVER_ERROR"));  // Lấy từ messages.properties
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    public ResponseEntity<BaseResponseDTO<Void>> handleGeneralException(Exception ex) {
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(BaseResponseDTO.fail("SERVER_ERROR"));
     }
 
-    // Xử lý lỗi Unauthorized
-    @ExceptionHandler(SecurityException.class)
-    public ResponseEntity<Map<String, Object>> handleUnauthorizedException(SecurityException ex) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", 0);
-        response.put("message", getMessage("UNAUTHORIZED"));
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    // Xử lý lỗi Unauthorized (UnauthorizedAccessException)
+    @ExceptionHandler(CustomExceptions.UnauthorizedAccessException.class)
+    public ResponseEntity<BaseResponseDTO<Void>> handleUnauthorizedException(CustomExceptions.UnauthorizedAccessException ex) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(BaseResponseDTO.fail(ex.getMessageCode()));
     }
 
-    // Xử lý lỗi tùy chỉnh (CustomException)
-    @ExceptionHandler(CustomException.class)
-    public ResponseEntity<Map<String, Object>> handleCustomException(CustomException ex) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", 0);
-        response.put("message", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    // Xử lý lỗi Not Found (NotFoundException)
+    @ExceptionHandler(CustomExceptions.NotFoundException.class)
+    public ResponseEntity<BaseResponseDTO<Void>> handleNotFoundException(CustomExceptions.NotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(BaseResponseDTO.fail(ex.getMessageCode()));
     }
+
+    @ExceptionHandler(CustomExceptions.CustomException.class)
+    public ResponseEntity<BaseResponseDTO<Void>> handleCustomException(CustomExceptions.CustomException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(BaseResponseDTO.fail(ex.getMessageCode()));
+    }
+
+    @ExceptionHandler(CustomExceptions.FileGenerationException.class)
+    public ResponseEntity<BaseResponseDTO<Void>> handleFileGenerationException(CustomExceptions.FileGenerationException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(BaseResponseDTO.fail(ex.getMessageCode()));
+    }
+
+
+
 }

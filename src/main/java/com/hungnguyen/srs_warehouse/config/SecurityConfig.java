@@ -1,6 +1,6 @@
 package com.hungnguyen.srs_warehouse.config;
 
-import com.hungnguyen.srs_warehouse.impl.UserDetailsServiceImpl;
+import com.hungnguyen.srs_warehouse.service.impl.UserDetailsServiceImpl;
 import com.hungnguyen.srs_warehouse.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

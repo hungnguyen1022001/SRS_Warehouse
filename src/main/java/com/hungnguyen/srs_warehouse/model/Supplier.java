@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 @Table(name = "SUPPLIERS_TBL")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString

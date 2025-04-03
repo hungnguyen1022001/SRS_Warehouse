@@ -1,9 +1,12 @@
 package com.hungnguyen.srs_warehouse.dto.orderList;
 
 import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import java.time.LocalDateTime;
-
 @Data
+@Builder
+@AllArgsConstructor
 public class OrderListDTO {
     private String orderId;
     private LocalDateTime createdAt;

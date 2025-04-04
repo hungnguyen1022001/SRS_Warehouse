@@ -1,10 +1,12 @@
 package com.hungnguyen.srs_warehouse.controller;
 
 import com.hungnguyen.srs_warehouse.dto.orderCreate.OrderRequest;
+import com.hungnguyen.srs_warehouse.dto.orderList.OrderListDTO;
 import com.hungnguyen.srs_warehouse.service.OrderService;
 import com.hungnguyen.srs_warehouse.dto.BaseResponseDTO;
 import com.hungnguyen.srs_warehouse.dto.orderDetail.OrderDetailDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +30,7 @@ public class OrderController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<BaseResponseDTO<Map<String, Object>>> getOrderList(
+    public ResponseEntity<BaseResponseDTO<Page<OrderListDTO>>> getOrderList(
             @RequestParam(required = false) String orderId,
             @RequestParam(required = false) String phone,
             @RequestParam(required = false) Integer status,

@@ -4,10 +4,13 @@ import com.hungnguyen.srs_warehouse.dto.BaseResponseDTO;
 import com.hungnguyen.srs_warehouse.service.ImportOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
+@PreAuthorize("isAuthenticated()")
 @RequestMapping("/api/import-orders")
 public class ImportOrderController {
 
@@ -19,9 +22,10 @@ public class ImportOrderController {
     }
 
     @PostMapping
-    public ResponseEntity<BaseResponseDTO<?>> importOrdersFromExcel(
-            @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<BaseResponseDTO<?>> importOrders(
+            @RequestParam("file") MultipartFile file,
+            HttpServletRequest request) {
 
-        return ResponseEntity.ok(importOrderService.importOrders(file));
+        return ResponseEntity.ok(importOrderService.importOrders(file, request));
     }
 }

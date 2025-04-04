@@ -1,5 +1,5 @@
 package com.hungnguyen.srs_warehouse.util;
-
+import com.hungnguyen.srs_warehouse.model.Order;
 import com.hungnguyen.srs_warehouse.repository.SupplierRepository;
 import com.hungnguyen.srs_warehouse.repository.ReceiverRepository;
 import com.hungnguyen.srs_warehouse.repository.OrderHistoryRepository;
@@ -46,11 +46,17 @@ public class IdGeneratorUtil {
     // Generate Order ID
     public String generateOrderId() {
         String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+        Order latestOrder = orderRepository.findTopByOrderByOrderIdDesc();
 
-        return "DH-%s-%05d".formatted(datePart,
-                Optional.ofNullable(orderRepository.findMaxOrderIdForToday(datePart))
-                        .map(id -> Integer.parseInt(id.substring(10)) + 1)
-                        .orElse(1)
-        );
+        if (latestOrder != null) {
+            String latestOrderDatePart = latestOrder.getOrderId().substring(3, 9);
+
+            if (datePart.equals(latestOrderDatePart)) {
+                int sequence = Integer.parseInt(latestOrder.getOrderId().substring(10)) + 1;
+                return "DH-%s-%05d".formatted(datePart, sequence);
+            }
+        }
+
+        return "DH-%s-%05d".formatted(datePart, 1);
     }
 }

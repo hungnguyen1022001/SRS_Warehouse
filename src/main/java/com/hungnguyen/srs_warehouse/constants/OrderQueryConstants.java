@@ -39,4 +39,5 @@ public class OrderQueryConstants {
         FROM Order o 
         WHERE o.orderId LIKE CONCAT('DH-', :datePart, '-%')
     """;
+
 }

@@ -6,15 +6,17 @@ import com.hungnguyen.srs_warehouse.exception.CustomExceptions;
 import com.hungnguyen.srs_warehouse.mapper.OrderCreateMapper;
 import com.hungnguyen.srs_warehouse.model.*;
 import com.hungnguyen.srs_warehouse.repository.*;
-import com.hungnguyen.srs_warehouse.security.jwt.JwtUtils;
+import com.hungnguyen.srs_warehouse.security.jwt.*;
 import com.hungnguyen.srs_warehouse.service.ImportOrderService;
 import com.hungnguyen.srs_warehouse.util.ExcelUtils;
 import com.hungnguyen.srs_warehouse.util.IdGeneratorUtil;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import jakarta.transaction.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,36 +24,42 @@ import java.util.stream.Collectors;
 public class ImportOrderServiceImpl implements ImportOrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderHistoryRepository orderHistoryRepository;
     private final SupplierRepository supplierRepository;
     private final ReceiverRepository receiverRepository;
     private final UserRepository userRepository;
     private final WarehouseRepository warehouseRepository;
     private final OrderCreateMapper orderCreateMapper;
     private final JwtUtils jwtUtils;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final IdGeneratorUtil idGeneratorUtil;
 
     public ImportOrderServiceImpl(OrderRepository orderRepository,
+                                  OrderHistoryRepository orderHistoryRepository,
                                   SupplierRepository supplierRepository,
                                   ReceiverRepository receiverRepository,
                                   UserRepository userRepository,
                                   WarehouseRepository warehouseRepository,
                                   OrderCreateMapper orderCreateMapper,
                                   JwtUtils jwtUtils,
+                                  JwtAuthenticationFilter jwtAuthenticationFilter,
                                   IdGeneratorUtil idGeneratorUtil) {
         this.orderRepository = orderRepository;
+        this.orderHistoryRepository = orderHistoryRepository;
         this.supplierRepository = supplierRepository;
         this.receiverRepository = receiverRepository;
         this.userRepository = userRepository;
         this.warehouseRepository = warehouseRepository;
         this.orderCreateMapper = orderCreateMapper;
         this.jwtUtils = jwtUtils;
+        this.jwtAuthenticationFilter= jwtAuthenticationFilter;
         this.idGeneratorUtil = idGeneratorUtil;
     }
 
     @Transactional
     @Override
-    public BaseResponseDTO<?> importOrders(MultipartFile file) {
-        String token = getTokenFromSecurityContext();
+    public BaseResponseDTO<?> importOrders(MultipartFile file, HttpServletRequest request) {
+        String token = jwtAuthenticationFilter.extractToken(request);
 
         String username = jwtUtils.getUsernameFromToken(token);
         String warehouseId = jwtUtils.getWarehouseIdFromToken(token);
@@ -78,12 +86,6 @@ public class ImportOrderServiceImpl implements ImportOrderService {
         return BaseResponseDTO.success("SUCCESS", orderIds);
     }
 
-    private String getTokenFromSecurityContext() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return (authentication != null && authentication.getCredentials() instanceof String)
-                ? (String) authentication.getCredentials()
-                : null;
-    }
 
     private String saveOrder(OrderRequest dto, User user, Warehouse warehouse) {
         Supplier supplier = supplierRepository.findByNameAndPhone(dto.supplier().name(), dto.supplier().phone())
@@ -105,14 +107,32 @@ public class ImportOrderServiceImpl implements ImportOrderService {
                 .orderId(orderId)
                 .supplier(supplier)
                 .receiver(receiver)
-                .createdAt(java.time.LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .createdBy(user.getUserId())
                 .warehouse(warehouse)
+                .failedDeliveries(0)
                 .status(0)
                 .build();
 
         orderRepository.save(order);
+
+        order = orderRepository.findById(orderId).orElseThrow(() ->
+                new CustomExceptions.NotFoundException("ORDER_001"));
+
+        OrderHistory orderHistory = OrderHistory.builder()
+                .historyId(idGeneratorUtil.generateOrderHistoryId())
+                .performedBy(user)
+                .performedAt(LocalDateTime.now())
+                .order(order)
+                .warehouse(warehouse)
+                .status(0)
+                .version(1)
+                .build();
+
+        orderHistoryRepository.saveAndFlush(orderHistory);
+
         return orderId;
     }
+
 
 }

@@ -47,7 +47,6 @@ public interface OrderRepository extends JpaRepository<Order, String>, JpaSpecif
             @Param("endDate") LocalDateTime endDate
     );
 
-    @Query(OrderQueryConstants.FIND_MAX_ORDER_ID_FOR_TODAY)
-    String findMaxOrderIdForToday(@Param("datePart") String datePart);
 
+    Order findTopByOrderByOrderIdDesc();
 }

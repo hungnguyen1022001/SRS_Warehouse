@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Comparator;
+
 
 @Service
 @RequiredArgsConstructor
@@ -83,15 +85,20 @@ public class OrderDispatchServiceImpl implements OrderDispatchService {
     }
 
     private Optional<Warehouse> findNearestWarehouse(Order order, List<Warehouse> warehouses) {
-        double orderLat = order.getReceiver().getLatitude().doubleValue();
-        double orderLon = order.getReceiver().getLongitude().doubleValue();
+        double orderLatitude = order.getReceiver().getLatitude().doubleValue();
+        double orderLongitude = order.getReceiver().getLongitude().doubleValue();
 
         return warehouses.stream()
                 .filter(w -> w.getCapacity() > 0)
-                .min((w1, w2) -> Double.compare(
-                        DistanceCalculator.calculateDistance(w1.getLatitude().doubleValue(), w1.getLongitude().doubleValue(), orderLat, orderLon),
-                        DistanceCalculator.calculateDistance(w2.getLatitude().doubleValue(), w2.getLongitude().doubleValue(), orderLat, orderLon)
+                .min(Comparator.comparingDouble(
+                        w -> DistanceCalculator.calculateDistance(
+                                w.getLatitude().doubleValue(),
+                                w.getLongitude().doubleValue(),
+                                orderLatitude,
+                                orderLongitude
+                        )
                 ));
+
     }
 
 }

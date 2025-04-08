@@ -82,7 +82,7 @@ public class ExcelSheetCopyUtils {
                 break;
             case FORMULA:
                 targetCell.setCellFormula(sourceCell.getCellFormula());
-                break;
+                 break;
             default:
                 targetCell.setCellValue("");
         }

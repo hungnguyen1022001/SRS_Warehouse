@@ -22,10 +22,10 @@ public class ImportOrderController {
     }
 
     @PostMapping
-    public ResponseEntity<BaseResponseDTO<?>> importOrders(
+    public ResponseEntity<?> importOrders(
             @RequestParam("file") MultipartFile file,
             HttpServletRequest request) {
 
-        return ResponseEntity.ok(importOrderService.importOrders(file, request));
+        return importOrderService.importOrders(file, request);
     }
 }

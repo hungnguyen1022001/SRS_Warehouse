@@ -8,8 +8,10 @@ import com.hungnguyen.srs_warehouse.model.*;
 import com.hungnguyen.srs_warehouse.repository.*;
 import com.hungnguyen.srs_warehouse.security.jwt.*;
 import com.hungnguyen.srs_warehouse.service.ImportOrderService;
-import com.hungnguyen.srs_warehouse.util.ExcelUtils;
+import com.hungnguyen.srs_warehouse.util.importfile.ExcelUtils;
 import com.hungnguyen.srs_warehouse.util.IdGeneratorUtil;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
@@ -19,7 +21,10 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 @Service
 public class ImportOrderServiceImpl implements ImportOrderService {
 
@@ -56,11 +61,10 @@ public class ImportOrderServiceImpl implements ImportOrderService {
         this.idGeneratorUtil = idGeneratorUtil;
     }
 
-    @Transactional
     @Override
-    public BaseResponseDTO<?> importOrders(MultipartFile file, HttpServletRequest request) {
+    @Transactional
+    public ResponseEntity<?> importOrders(MultipartFile file, HttpServletRequest request) {
         String token = jwtAuthenticationFilter.extractToken(request);
-
         String username = jwtUtils.getUsernameFromToken(token);
         String warehouseId = jwtUtils.getWarehouseIdFromToken(token);
 
@@ -74,16 +78,22 @@ public class ImportOrderServiceImpl implements ImportOrderService {
         List<OrderRequest> validOrders = ExcelUtils.parseExcelFile(file, errorRows);
 
         if (!errorRows.isEmpty()) {
-            String errorFilePath = ExcelUtils.generateErrorFile(file, errorRows);
-            return BaseResponseDTO.fail("EXCEL_IMPORT_ERROR", errorFilePath);
+            ExcelUtils.ExcelErrorFile errorFile = ExcelUtils.generateErrorFileBytes(file, errorRows);
+            String fileName = URLEncoder.encode(errorFile.filename(), StandardCharsets.UTF_8)
+                    .replaceAll("\\+", "%20");
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + fileName + "\"; filename*=UTF-8''" + fileName)
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(errorFile.content());
         }
 
-        // ✅ Lưu đơn hàng
         List<String> orderIds = validOrders.stream()
                 .map(dto -> saveOrder(dto, user, warehouse))
                 .collect(Collectors.toList());
 
-        return BaseResponseDTO.success("SUCCESS", orderIds);
+        return ResponseEntity.ok(BaseResponseDTO.success("SUCCESS", orderIds));
     }
 
 
@@ -109,7 +119,7 @@ public class ImportOrderServiceImpl implements ImportOrderService {
                 .receiver(receiver)
                 .createdAt(LocalDateTime.now())
                 .createdBy(user.getUserId())
-                .warehouse(warehouse)
+                .warehouse(null)
                 .failedDeliveries(0)
                 .status(0)
                 .build();
@@ -124,7 +134,7 @@ public class ImportOrderServiceImpl implements ImportOrderService {
                 .performedBy(user)
                 .performedAt(LocalDateTime.now())
                 .order(order)
-                .warehouse(warehouse)
+                .warehouse(null)
                 .status(0)
                 .version(1)
                 .build();

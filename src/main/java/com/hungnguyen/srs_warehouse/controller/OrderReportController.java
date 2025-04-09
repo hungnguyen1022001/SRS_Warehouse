@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter;
 public class OrderReportController {
     private final OrderReportService orderReportService;
 
-    @GetMapping("/export/daily")
+    @PostMapping("/export/daily")
     public ResponseEntity<byte[]> exportDailyOrderReport(
             @RequestParam List<String> warehouseIds,
             @RequestParam String fromDate,
@@ -23,7 +23,7 @@ public class OrderReportController {
         return orderReportService.generateDailyOrderReport(warehouseIds, fromDate, toDate);
     }
 
-    @GetMapping("/export/monthly")
+    @PostMapping("/export/monthly")
     public ResponseEntity<byte[]> exportMonthlyOrderReport(
             @RequestParam List<String> warehouseIds,
             @RequestParam String fromDate,

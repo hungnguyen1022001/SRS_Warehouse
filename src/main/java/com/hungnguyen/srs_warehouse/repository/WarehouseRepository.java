@@ -21,6 +21,10 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, String> {
     @EntityGraph(attributePaths = {"warehouseId", "name", "address"})
     Warehouse findByWarehouseId(String warehouseId);
 
+    @Query("SELECT w.warehouseId, w.name FROM Warehouse w WHERE w.warehouseId IN :warehouseIds")
+    List<Object[]> findIdAndNameByWarehouseIds(List<String> warehouseIds);
+
+
 
 
 }

@@ -30,4 +30,9 @@ public class OrderReportByMonthDTO {
     public Long getOrderCount() {
         return orderCount;
     }
+
+    public void setWarehouseId(String warehouseId) { this.warehouseId = warehouseId; }
+
+
+    public void setWarehouseName(String warehouseName) { this.warehouseName = warehouseName; }
 }
